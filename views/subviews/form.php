@@ -1,6 +1,8 @@
 <!-- VALIDATE FORM -->
 <?php echo CHtml::form($updateUrl, 'post', array('id'=>'validatekce', 'name'=>'validatekce', 'class'=>'form30', 'enctype'=>'multipart/form-data')); ?>
-<?php $this->widget('ext.SettingsWidget.SettingsWidget', array(
+<?php 
+#echo "<pre>".var_export($aSettings,1)."</pre>";
+    $this->widget('ext.SettingsWidget.SettingsWidget', array(
         'settings' => $aSettings,
         'method' => 'post',
         'form' => false,
@@ -12,5 +14,7 @@
                 'name' => 'cancel'
             ),
         )
-    )); ?>
+    )); 
+    ?>
 <?php echo CHtml::endForm(); ?>
+

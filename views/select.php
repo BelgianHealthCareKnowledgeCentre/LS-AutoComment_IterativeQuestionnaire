@@ -4,14 +4,7 @@
     <?php $this->widget('ext.SettingsWidget.SettingsWidget', array(
             'settings' => $settings,
             'form' => false,
-            'buttons' => array(
-                gT('Validate question before import') => array(
-                    'name' => 'confirm'
-                ),
-                gT('Cancel') => array(
-                    'name' => 'cancel'
-                ),
-            )
+            'buttons' => $buttons,
         )); ?>
     </form>
 </div>
