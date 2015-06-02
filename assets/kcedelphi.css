@@ -1,0 +1,59 @@
+a.kcebtn:link,a.kcebtn:visited {
+    text-decoration: underline;
+}
+a.kcebtn:hover {
+    text-decoration: none;
+    background:#CCC;
+}
+.questiontitle{
+display:block;
+border-top: 1px solid #999;
+}
+.setting dl
+{
+width: 100%;
+margin: 0 1em;
+padding: 0;
+}
+
+.setting dl dt
+{
+width: 25em;
+float: left;
+clear:both;
+margin: 0 0 0 0;
+padding: 0;
+font-weight: bold;
+text-align: right;
+}
+.setting dl dt:after { content: ":"; }
+
+.setting dl dd
+{
+float: left;
+width:10em;
+text-align: left;
+/*margin: 0 0 0 15.5em;*/
+padding: 0 0 0.1em 0;
+}
+.btn.btn-link{
+color: #0088cc;text-decoration:underline;
+}
+.modal-lg .modal-body
+{
+   height:100%;
+}
+
+.modal-lg 
+{
+   height:80%;
+   width:70%;
+   margin-left: -35%; 
+}
+@media (max-width: 768px) {
+   .modal-lg 
+   {
+    width:90%;
+        margin-left: 2%; 
+   }
+}
