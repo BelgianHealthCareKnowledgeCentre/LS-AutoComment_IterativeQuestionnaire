@@ -5,9 +5,17 @@ a.kcebtn:hover {
     text-decoration: none;
     background:#CCC;
 }
-.questiontitle{
+
+.settingswidget .setting > .questiontitle,
+.questiontitle
+{
 display:block;
 border-top: 1px solid #999;
+}
+.settingswidget .setting > .oldresult,
+.oldresult
+{
+display:block;
 }
 .setting dl
 {

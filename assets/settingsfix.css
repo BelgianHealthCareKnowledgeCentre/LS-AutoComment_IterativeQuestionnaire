@@ -1,0 +1,13 @@
+#pluginsettings .settingswidget .setting > input,#pluginsettings .settingswidget .setting > textarea,
+#pluginsettings-htmlEditorAnswers .setting > input,#pluginsettings-htmlEditorAnswers  .setting > textarea {
+    width: auto;
+  -webkit-box-sizing: content-box;
+  -moz-box-sizing: content-box;
+  box-sizing: content-box;
+}
+#pluginsettings .settingswidget .jsoneditor-wrapper,
+#pluginsettings-htmlEditorAnswers .jsoneditor-wrapper{
+width:60%;
+}
+.settingswidget input.large{min-width:30em}
+.settingswidget .select2-container{min-width:15em}

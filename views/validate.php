@@ -9,6 +9,7 @@
         <div class='alert alert-danger'>No Delphi questions found. Are you sure to activate <a href='//manual.limesurvey.org/Assessments' rel='external' title='LimeSurvey manual'>assessment</a> and set some value different of 0 for some question.</div>    
     <?php } ?>
     <?php include "subviews/result.php" ?>
+
     <?php include "subviews/form.php" ?>
 
     </div>

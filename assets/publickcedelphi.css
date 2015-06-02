@@ -1,0 +1,32 @@
+.kce-title .ui-icon{
+position:absolute;
+top:0;
+right:0;
+}
+.kce-title{
+position:relative;
+border:1px solid;
+border-bottom-style:dotted;
+-webkit-border-top-left-radius: 3px;
+-webkit-border-top-right-radius: 3px;
+border-top-left-radius: 3px;
+border-top-right-radius: 3px;
+margin:0;
+font-weight:700;
+padding:0.4em;
+}
+.kce-button{
+cursor:pointer;
+}
+.kce-content{
+border:1px solid;
+border-width: 0 1px 1px;
+-webkit-border-bottom-right-radius: 3px;
+-webkit-border-bottom-left-radius: 3px;
+border-bottom-right-radius: 3px;
+border-bottom-left-radius: 3px;
+background:#fff;
+background:rgba(255, 255, 255, 0.5);
+margin:0;
+padding:0.4em
+}
