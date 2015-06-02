@@ -10,4 +10,5 @@
 width:60%;
 }
 .settingswidget input.large{min-width:30em}
-.settingswidget .select2-container{min-width:15em}
+.settingswidget .select2-container{min-width:20em}
+.settingswidget .setting table{display:table}

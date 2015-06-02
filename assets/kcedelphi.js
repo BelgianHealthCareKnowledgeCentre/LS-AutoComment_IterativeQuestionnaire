@@ -1,7 +1,19 @@
-$( document ).tooltip();
+$( document ).tooltip(
+	{
+	items: "[data-kcetitle], [title]",
+      content: function() {
+        var element = $( this );
+        console.log(element);
+        if ( element.is( "[data-kcetitle]" ) ) {
+			return $(element).prev(".kcetitle").html();
+        }
+        if ( element.is( "[title]" ) ) {
+          return element.attr( "title" );
+        }
+      }
+ });
+
 function showDialog(){
-
-
    return false;
 }
 

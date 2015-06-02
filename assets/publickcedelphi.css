@@ -1,8 +1,23 @@
-.kce-title .ui-icon{
+
+.kce-title{
+position:relative;
+cursor:pointer;
+}
+.kce-button{
+cursor:pointer;
+height:20px;
+width:20px;
+}
+.kce-question .kce-button{
 position:absolute;
 top:0;
 right:0;
 }
+.boilerplate.kce-question .answer{
+display:none;
+}
+
+/*
 .kce-title{
 position:relative;
 border:1px solid;
@@ -15,9 +30,7 @@ margin:0;
 font-weight:700;
 padding:0.4em;
 }
-.kce-button{
-cursor:pointer;
-}
+
 .kce-content{
 border:1px solid;
 border-width: 0 1px 1px;
@@ -30,3 +43,4 @@ background:rgba(255, 255, 255, 0.5);
 margin:0;
 padding:0.4em
 }
+*/

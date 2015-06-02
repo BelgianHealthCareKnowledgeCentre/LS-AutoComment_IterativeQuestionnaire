@@ -17,13 +17,25 @@ border-top: 1px solid #999;
 {
 display:block;
 }
+.settingswidget .setting > .oldresult table{display:table}
 .setting dl
 {
 width: 100%;
 margin: 0 1em;
 padding: 0;
 }
+table.kce-table{
 
+}
+table.kce-table thead th{
+text-align:center;
+}
+table.kce-table tbody th{
+text-align:right;min-width:15em;
+}
+table.kce-table tbody td{
+text-align:center;min-width:4em;
+}
 .setting dl dt
 {
 width: 25em;
@@ -64,4 +76,9 @@ color: #0088cc;text-decoration:underline;
     width:90%;
         margin-left: 2%; 
    }
+}
+
+.kcetitle{display:none}
+.kce-table th, .kce-table td {
+    padding: 2px;
 }
