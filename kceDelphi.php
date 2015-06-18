@@ -32,6 +32,8 @@ class kceDelphi extends PluginBase {
     private $sError="Unknow error.";
     private $sLanguage="";
     private static $aValidQuestion=array("!","L","O");
+    private static $aTextQuestion=array("S","T","U");
+
     private $oldSchema;
     private $aResult=array('success'=>array(),'warning'=>array(),'error'=>array());
     //~ private $validatescore,$scoreforyes,$scoreforno;
@@ -237,7 +239,6 @@ class kceDelphi extends PluginBase {
 
             // Did we have an old survey ?
             $aTables = App()->getApi()->getOldResponseTables($iSurveyId);
-            tracevar($aTables);
             if(count($aTables)>0)
             {
                 $aSettings['launch']=array(
@@ -352,7 +353,6 @@ class kceDelphi extends PluginBase {
                     }
                 }
             }
-            tracevar($this->aResult);
             Yii::app()->setFlashMessage("Survey updated");
         }
         $oQuestions=$this->getDelphiQuestion();
@@ -409,7 +409,9 @@ class kceDelphi extends PluginBase {
         $list=array();
         foreach ($aTables as $table)
         {
-            $count = PluginDynamic::model($table)->count();
+            $criteria= New CDbCriteria;
+            $criteria->condition="submitdate IS NOT NULL";
+            $count = PluginDynamic::model($table)->count($criteria);
             $timestamp = date_format(new DateTime(substr($table, -14)), 'Y-m-d H:i:s');
             if($count>0)
                 $list[$table]  = "$timestamp ($count responses)";
@@ -772,14 +774,14 @@ class kceDelphi extends PluginBase {
     private function countOldAnswers($sField,$sValue="")
     {
         $sQuotedField=Yii::app()->db->quoteColumnName($sField);
-        return PluginDynamic::model($this->sTableName)->count("{$sQuotedField}=:field{$sField}", array(":field{$sField}"=>$sValue));
+        return PluginDynamic::model($this->sTableName)->count("submitdate IS NOT NULL AND {$sQuotedField}=:field{$sField}", array(":field{$sField}"=>$sValue));
     }
     private function getOldAnswerText($sField)
     {
         $sQuotedField=Yii::app()->db->quoteColumnName($sField);
         //return Yii::app()->db->createCommand("SELECT {$sQuotedField} FROM {{{$this->sTableName}}} WHERE {$sQuotedField} IS NOT NULL AND  {$sQuotedField}!=''")->queryAll();
         //Problem on prefix
-        $aResult=Yii::app()->db->createCommand("SELECT {$sQuotedField} FROM {$this->sTableName} WHERE {$sQuotedField} IS NOT NULL AND {$sQuotedField}!=''")->queryAll();
+        $aResult=Yii::app()->db->createCommand("SELECT {$sQuotedField} FROM {$this->sTableName} WHERE submitdate IS NOT NULL AND {$sQuotedField} IS NOT NULL AND {$sQuotedField}!=''")->queryAll();
         return $this->htmlListFromQueryAll($aResult);
     }
     private function getDelphiQuestion()
@@ -802,6 +804,10 @@ class kceDelphi extends PluginBase {
                 $aoQuestionsInfo[]=$oQuestion;
         }
         return $aoQuestionsInfo;
+    }
+    private function getCommentQuestion()
+    {
+
     }
     private function doQuestion($iQid,$sType,$sAction,$oldSchema=NULL,$sDo=null)
     {
@@ -1183,8 +1189,11 @@ class kceDelphi extends PluginBase {
                     if($sColumnName)
                     {
                         $baseQuestionText =$this->getOldAnswerText($sColumnName->name);
-                        $jsonBaseQuestionText=json_encode($baseQuestionText);
-                        $sLabel="<div class='kcetitle'>$baseQuestionText</div><span class='label' data-kcetitle='true'>See previous comments</span> {$sLabel}";
+                        if($baseQuestionText){
+                            $jsonBaseQuestionText=json_encode($baseQuestionText);
+                            $sLabel="<div class='kcetitle'>$baseQuestionText</div><span class='label' data-kcetitle='true'>See previous comments</span> {$sLabel}";
+                        }else
+                            $sLabel="<span class='label label-warning'>No old answers</span> {$sLabel}";
                     }
                     else
                         $sLabel="<span class='label label-warning'>No old answers</span> {$sLabel}";
