@@ -66,45 +66,12 @@ class kceDelphi extends PluginBase {
                                         'label'=>"Comment question (automatic)",
                                         'options'=>array(
                                             'none'=>'No creation of this question',
-                                            'hide'=>'Hide this question',
                                             'create'=>"Create question with default text (and Show it)",
-                                            "show"=>"Show the question",
                                         ),
                                     ),
-                                'condition'=>"{QCODE}.value<0",
+                                'condition'=>"QCODE.valueNAOK < 0",
                                 'hidevalidate'=>false,
                             ),
-                            'comh'=>array(
-                                'questiontype'=>"X",
-                                'select'=>array(
-                                        'label'=>"Comments from the previous round (automatic)",
-                                        'options'=>array(
-                                            'none'=>'No creation of this question',
-                                            'hide'=>'Hide this question',
-                                            'create'=>"Create question with the new comment list (and Show it)",
-                                            'update'=>"Update question with the new comment list (and Show it)",
-                                            "show"=>"Show the question",
-                                        ),
-                                    ),
-                                'need'=>"comm",
-                                'hidevalidate'=>false,
-                            ),
-                            //~ 'cgd'=>array(
-                                //~ 'create'=>false,
-                                //~ 'createupdate'=>false,
-                                //~ 'update'=>null,
-                                //~ 'questiontype'=>"T",
-                                //~ 'condition'=>"{QCODE}.value>0",
-                                //~ 'hidevalidate'=>true,
-                            //~ ),
-                            //~ 'cgdh'=>array(
-                                //~ 'create'=>false,
-                                //~ 'createupdate'=>true,
-                                //~ 'update'=>true,
-                                //~ 'questiontype'=>"X",
-                                //~ 'need'=>"cgd",
-                                //~ 'hidevalidate'=>true,
-                            //~ ),
                         );
     private $aLang=array(
 
@@ -115,7 +82,7 @@ class kceDelphi extends PluginBase {
                 ),
             'comm'=>array(
                 'view'=>"Have a question for comment (Disagree)",
-                'create'=>"Create a question to enter comment (when disagree : with condition : assesment of question is under 0 (score))",
+                'create'=>"Create a question to enter comment (automatic :assesment of question is under 0)",
                 'createupdate'=>"Create a question to enter comment (when disagree : with condition : assesment of question is under 0 (score))",
                 'update'=>"",
                 ),
@@ -166,7 +133,7 @@ class kceDelphi extends PluginBase {
             'type'=>'string',
             'label'=>'Default header for list of comments',
             'class' => 'large',
-            'default'=>'Previous comments of people who disagree.',
+            'default'=>'Previous comments.',
         ),
         //~ 'commentalthist'=>array(
             //~ 'type'=>'string',
@@ -465,136 +432,23 @@ class kceDelphi extends PluginBase {
             $this->oldSchema = $oldSchema = $oldTable->getTableSchema();
 
             // Ok get the information ...
-            $oQuestions=$this->getDelphiQuestion();
+            $oQuestions=$this->getAllQuestion();
             $aQuestions=array();
             $aQuestionsSettings=array();
             $aQuestionsInfo=array();
 
             foreach($oQuestions as $oQuestion){
-                $sFieldName=$oQuestion->sid."X".$oQuestion->gid."X".$oQuestion->qid;
-                $aQuestionsInfo[$oQuestion->qid]=array();
-                if($aQuestionsInfo[$oQuestion->qid]['oldField']=$this->getOldField($oldSchema,$oQuestion->qid))
+                if(in_array($oQuestion->type,self::$aValidQuestion))
                 {
-                    // Test if question is hidden (already validated)
-                    $oAttributeHidden=QuestionAttribute::model()->find("qid=:qid AND attribute='hidden'",array(":qid"=>$oQuestion->qid));
-                    $sQuestionTextTitle=str_replace("'",'’',FlattenText($oQuestion->question));
-                    $sQuestionText=ellipsize($sQuestionTextTitle,80);
-                    if($oQuestion->title!==preg_replace("/[^_a-zA-Z0-9]/", "", $oQuestion->title))
-                    {
-                        $aQuestionsSettings["q_{$oQuestion->qid}"]['type']='info';
-                        $aQuestionsSettings["q_{$oQuestion->qid}"]['content']=CHtml::tag('div',array('class'=>'questiontitle','title'=>$sQuestionTextTitle),"<strong>Invalid title : {$oQuestion->title}</strong> : LimeSurvey 2.05 title allow only alphanumeric (no space, no dot ..)");
-                    }
-                    else
-                    {
-                        // Get the % and evaluate note
-                        $aOldAnswers=$this->getOldAnswersInfo($oQuestion->qid,$oQuestion->type,$aQuestionsInfo[$oQuestion->qid]['oldField']->name);
-                        $iTotal = 0;
-                        $iTotalValue=0;
-                        $iTotalNeg=0;
-                        $iTotalPos=0;
-
-                        foreach ($aOldAnswers as $aOldAnswer) {
-                            $iTotal += $aOldAnswer['count'];
-                            if($aOldAnswer['assessment_value'])
-                                $iTotalValue += $aOldAnswer['count'];
-                            if(intval($aOldAnswer['assessment_value'])<0)
-                                $iTotalNeg += $aOldAnswer['count'];
-                            if(intval($aOldAnswer['assessment_value'])>0)
-                                $iTotalPos += $aOldAnswer['count'];
-                        }
-                        $sHtmlTable="";
-                        $hiddenPart="";
-                        $bValidate=false;
-                        $iScore=0;
-
-                        if($iTotalValue)
-                        {
-                            $sHtmlTable.="<table class='kce-table clearfix table table-striped table-bordered'><thead><td></td><th>count</th><th>%</th></thead><tbody>";
-                            $iTotalPosPC=number_format($iTotalPos/$iTotalValue*100)."%";
-                            $iTotalNegPC=number_format($iTotalNeg/$iTotalValue*100)."%";
-                            $sHtmlTable.="<tr><th>Upper than 0</th><td>{$iTotalPos}</td><td>{$iTotalPosPC}</td></tr>";
-                            $sHtmlTable.="<tr><th>Lesser than 0</th><td>{$iTotalNeg}</td><td>{$iTotalNegPC}</td></tr>";
-                            $sHtmlTable.="</tbody></table>";
-                        }
-                        $sHtmlTable.="<table class='kce-table clearfix table table-striped table-bordered'><thead><td></td><th>count</th><th>%</th>";
-                        $sHtmlTable.="<th>% cumulative</th>";
-                        if($iTotalValue)
-                        {
-                            $sHtmlTable.="<th>% with value</th>";
-                            $sHtmlTable.="<th>% cumulative with value</th>";
-                        }
-                        $sHtmlTable.="</thead><tbody>";
-                        $cumulBrut=0;
-                        $cumulValue=0;
-                        foreach ($aOldAnswers as $sCode=>$aOldAnswer)
-                        {
-                            $sHtmlTable.="<tr>";
-                            $sHtmlTable.="<th title='".str_replace("'",'’',FlattenText($aOldAnswer['answer']))."'>{$sCode} : <small>".ellipsize(FlattenText($aOldAnswer['answer']),60)."</small></th>";
-                            $sHtmlTable.="<td>{$aOldAnswer['count']}</td>";
-                            if($iTotal>0)
-                            {
-                                $sHtmlTable.="<td>".number_format($aOldAnswer['count']/$iTotal*100)."%"."</td>";
-                                $cumulBrut+=$aOldAnswer['count'];
-                                $sHtmlTable.="<td>".number_format($cumulBrut/$iTotal*100)."%"."</td>";
-                            }
-                            else
-                                $sHtmlTable.="<td>/</td><td>/</td>";
-                            if($iTotalValue>0)
-                            {
-                                if(intval($aOldAnswer['assessment_value'])!=0)
-                                {
-                                    $sHtmlTable.="<td>".number_format($aOldAnswer['count']/$iTotalValue*100)."%"."</td>";
-                                    $cumulValue+=$aOldAnswer['count'];
-                                    $sHtmlTable.="<td>".number_format($cumulValue/$iTotalValue*100)."%"."</td>";
-                                }else{
-                                    $sHtmlTable.="<td>/</td><td>/</td>";
-                                }
-                            }
-                            $sHtmlTable.="</tr>";
-                        }
-                        $sHtmlTable.="</tbody></table>";
-
-                            //~ $aHtmlListQuestion.="<dt title='".str_replace("'",'’',FlattenText($aOldAnswer['answer']))."'>{$sCode} : <small>".ellipsize(FlattenText($aOldAnswer['answer']),60)."</small></dt>"
-                                            //~ ."<dd>".$aOldAnswer['count']." : ";
-//~ 
-                            //~ if($iTotal>0)
-                            //~ {
-                                //~ $aHtmlListQuestion.=number_format($aOldAnswer['count']/$iTotal*100)."%";
-                                //~ $hiddenPart.=CHtml::hiddenField("value[{$oQuestion->qid}][{$sCode}]",$aOldAnswer['count']/$iTotal);
-                            //~ }
-                            //~ $aHtmlListQuestion.="</dd>";
-                            //~ $iScore+=$aOldAnswer['count']*$aOldAnswer['assessment_value'];
-                            //~ $aHtmlListQuestions[]=$aHtmlListQuestion;
-                        //~ }
-
-
-                        $aQuestionsSettings["q_{$oQuestion->qid}"]['type']='info';
-                        $aQuestionsSettings["q_{$oQuestion->qid}"]['content']="<div class='questiontitle' title='{$sQuestionTextTitle}'><strong>{$oQuestion->title}</strong> : {$sQuestionText}</div><div class='oldresult  clearfix'>"
-                            .$sHtmlTable
-                            ."</div>"
-                            .$hiddenPart;
-
-                        $aQuestionsSettings["validate[{$oQuestion->qid}]"]['type']='select';
-                        $aQuestionsSettings["validate[{$oQuestion->qid}]"]['label']="Validation of this question";
-                        $aQuestionsSettings["validate[{$oQuestion->qid}]"]['options']=array(
-                            'hide'=>"Hide it to respondant",
-                            'show'=>"Show it to respondant",
-                        );
-                        $aQuestionsSettings["validate[{$oQuestion->qid}]"]['current']=($oAttributeHidden && $oAttributeHidden->value) ? 'hide' : 'show';
-
-                        foreach($this->aDelphiCodes as $sDelphiCode=>$aSettings)
-                        {
-                            $aQuestionsSettings=array_merge($aQuestionsSettings,$this->getValidateQuestionSettings($oQuestion->qid,$oQuestion->title,$sDelphiCode));
-                        }
-                    }
+                    $aQuestionsSettings=array_merge($aQuestionsSettings,$this->getValidateQuestionSettings($oQuestion));
+                }
+                elseif(in_array($oQuestion->type,self::$aTextQuestion))
+                {
+                    $aQuestionsSettings=array_merge($aQuestionsSettings,$this->getCommentQuestionSettings($oQuestion));
                 }
                 else
                 {
-                    $oAttributeHidden=QuestionAttribute::model()->find("qid=:qid AND attribute='hidden'",array(":qid"=>$oQuestion->qid));
-                    $sQuestionTextTitle=str_replace("'",'’',FlattenText($oQuestion->question));
-                    $sQuestionText=ellipsize($sQuestionTextTitle,80);
-                    $aQuestionsSettings["q_".$oQuestion->qid]['type']='info';
-                    $aQuestionsSettings["q_".$oQuestion->qid]['content']="<strong class='questiontitle' title='{$sQuestionTextTitle}'>{$oQuestion->title}</strong> : no corresponding question";
+                    
                 }
             }
             $aSurveySettings['oldsurveytable']=array(
@@ -656,7 +510,7 @@ class kceDelphi extends PluginBase {
                     else
                         $this->aResult['warning'][]="{$oQuestion->title} unable to hide to respondant";
                     // Hide comment question
-                    if($oQuestion)
+                    if($oQuestion && in_array($oQuestion->type,$this->aDelphiCodes))
                     {
                         foreach($this->aDelphiCodes as $sDelphiKey=>$aDelphiCode)
                         {
@@ -668,6 +522,7 @@ class kceDelphi extends PluginBase {
                             }
                         }
                     }
+                    
                 }
                 elseif($oQuestion && $bHidden && $sValue=='show')
                 {
@@ -688,6 +543,12 @@ class kceDelphi extends PluginBase {
                             $this->doQuestion($iQid,$sType,$sAction,$oldSchema);
                     }
                 }
+            }
+            $aQuestionsValidations=$oRequest->getPost('commhist',array());
+            foreach($aQuestionsValidations as $iQid=>$aQuestionAction)
+            {
+                $this->doCommentQuestion($iQid,$aQuestionAction);
+
             }
         }
         LimeExpressionManager::SetDirtyFlag();
@@ -796,18 +657,42 @@ class kceDelphi extends PluginBase {
         $oCriteria->order="group_order asc, question_order asc";
 
         $oQuestions=Question::model()->with('groups')->findAll($oCriteria);
-
         $aoQuestionsInfo=array();
         foreach($oQuestions as $oQuestion){
+            $key="G".str_pad($oQuestion->groups->group_order,5,"0",STR_PAD_LEFT)."Q".str_pad($oQuestion->question_order,5,"0",STR_PAD_LEFT);
             $oAnswer=Answer::model()->find("qid=:qid and assessment_value!=0",array(":qid"=>$oQuestion->qid));
             if($oAnswer)
-                $aoQuestionsInfo[]=$oQuestion;
+                $aoQuestionsInfo[$key]=$oQuestion;
         }
         return $aoQuestionsInfo;
     }
     private function getCommentQuestion()
     {
+        static $aoQuestionsInfo;
+        if(is_array($aoQuestionsInfo))
+            return $aoQuestionsInfo;
+        $oCriteria = new CDbCriteria();
+        $oCriteria->addCondition("t.sid=:sid AND t.language=:language and parent_qid=0");
+        $oCriteria->params=array(":sid"=>$this->iSurveyId,":language"=>$this->sLanguage);
+        $oCriteria->addInCondition("type",self::$aTextQuestion);
 
+        $oCriteria->order="group_order asc, question_order asc";
+
+        $oQuestions=Question::model()->with('groups')->findAll($oCriteria);
+        $aoQuestionsInfo=array();
+        foreach($oQuestions as $oQuestion){
+            $key="G".str_pad($oQuestion->groups->group_order,5,"0",STR_PAD_LEFT)."Q".str_pad($oQuestion->question_order,5,"0",STR_PAD_LEFT);
+            $aoQuestionsInfo[$key]=$oQuestion;
+        }
+        return $aoQuestionsInfo;
+    }
+    private  function getAllQuestion()
+    {
+        $oDelphiQuestions=$this->getDelphiQuestion();
+        $oCommentQuestions=$this->getCommentQuestion();
+        $oAllQuestions = array_merge($oDelphiQuestions, $oCommentQuestions);
+        ksort ($oAllQuestions);
+        return $oAllQuestions;
     }
     private function doQuestion($iQid,$sType,$sAction,$oldSchema=NULL,$sDo=null)
     {
@@ -821,7 +706,6 @@ class kceDelphi extends PluginBase {
         if($sDo)
         {
             $sCode=$oQuestionBase->title;
-            tracevar("{$sCode}{$sType}");
             $oQuestion=Question::model()->find("sid=:sid AND language=:language AND title=:title",array(":sid"=>$this->iSurveyId,":language"=>$this->sLanguage,":title"=>"{$sCode}{$sType}"));
             if($oQuestion)
                 $oHidden=QuestionAttribute::model()->find("qid=:qid AND attribute='hidden'",array(":qid"=>$oQuestion->qid));
@@ -1012,12 +896,112 @@ class kceDelphi extends PluginBase {
             }
         }
     }
+    private function doCommentQuestion($iQid,$sAction)
+    {
+        $oSurvey=Survey::model()->findByPk($this->iSurveyId);
+        $aLangs=$oSurvey->getAllLanguages();
+        $oQuestionBase=Question::model()->find("sid=:sid AND language=:language AND qid=:qid",array(":sid"=>$this->iSurveyId,":language"=>$this->sLanguage,":qid"=>"{$iQid}"));
+        if(!$oQuestionBase)
+        {
+            $this->addResult("No question {$iQid} in survey",'error');
+            return false;
+        }
+        $sCode=$oQuestionBase->title;
+        $oQuestion=Question::model()->find("sid=:sid AND language=:language AND title=:title",array(":sid"=>$this->iSurveyId,":language"=>$this->sLanguage,":title"=>"{$sCode}h"));
+        if($oQuestion)
+            $oHidden=QuestionAttribute::model()->find("qid=:qid AND attribute='hidden'",array(":qid"=>$oQuestion->qid));
+        $bHidden=( isset($oHidden) && $oHidden->value)? true : false;
+        switch($sAction)
+        {
+            case 'none':
+                if($oQuestion)
+                    $this->addResult("{$oQuestion->title} exist in survey.",'warning');
+                return;
+            case 'hide':
+                if($oQuestion && !$bHidden)
+                {
+                    if($this->setQuestionHidden($oQuestion->qid))
+                        $this->aResult['success'][]="{$oQuestion->title} was hide to respondant";
+                    else
+                        $this->aResult['warning'][]="{$oQuestion->title} unable to hide to respondant";
+                }
+                return;
+            case 'create':
+                //Existing question
+                if($oQuestion)
+                {
+                    $this->addResult("A question with code {$sCode}h already exist in your survey, can not create a new one",'error');
+                    return false;
+                }
+                $iOrder=$oQuestionBase->question_order;
+                if($iNewQid=$this->createQuestion($oQuestionBase->title,"h",$oQuestionBase->gid,$iOrder))
+                {
+                    $oQuestion=Question::model()->find("sid=:sid AND language=:language AND qid=:qid",array(":sid"=>$this->iSurveyId,":language"=>$this->sLanguage,":qid"=>$iNewQid));
+                }
+                else
+                {
+                    break;
+                }
+            case 'update':
+                if($oQuestion)
+                {
+                    if($bHidden)
+                    {
+                        if($this->setQuestionShown($oQuestion->qid))
+                            $this->aResult['success'][]="{$oQuestion->title} was shown to respondant";
+                        else
+                            $this->aResult['warning'][]="{$oQuestion->title} unable to shown to respondant";
+                    }
+                    if($oQuestionBase && $this->oldSchema)
+                    {
+                        $sColumnName=$this->getOldField($this->oldSchema,$oQuestionBase->qid);
+                        if($sColumnName)
+                        {
+                            $baseQuestionText =$this->getOldAnswerText($sColumnName->name);
+                            foreach($aLangs as $sLang)
+                            {
+                                $newQuestionHelp="<div class='kce-content'>".$baseQuestionText."</div>";
+                                Question::model()->updateAll(array('help'=>$newQuestionHelp),"sid=:sid AND qid=:qid AND language=:language",array(":sid"=>$this->iSurveyId,":qid"=>$oQuestion->qid,":language"=>$sLang));
+                            }
+                            $this->addResult("{$oQuestionBase->title}h question help updated with list of answer",'success');
+                        }
+                        else
+                        {
+                            $newQuestionHelp="";
+                            Question::model()->updateAll(array('help'=>$newQuestionText),"sid=:sid AND qid=:qid",array(":sid"=>$this->iSurveyId,":qid"=>$oQuestion->qid));
+                            $this->addResult("{$oQuestionBase->title}h question help clear: question was not found in old survey",'warning');
+                        }
+                    }
+                }
+                break;
+            case 'show':
+                if($bHidden)
+                {
+                    if($this->setQuestionShown($oQuestion->qid))
+                        $this->aResult['success'][]="{$oQuestion->title} was shown to respondant";
+                    else
+                        $this->aResult['warning'][]="{$oQuestion->title} unable to shown to respondant";
+                }
+                return;
+            default:
+                $this->addResult("Unknow action {$sDo} {$iQid} {$sType} {$sAction} in survey",'warning');
+                return false;
+        }
+    }
     private function createQuestion($sCode,$sType,$iGid,$iOrder)
     {
         //Need to renumber all questions on or after this
         $iOrder++;
         $sQuery = "UPDATE {{questions}} SET question_order=question_order+1 WHERE sid=:sid AND gid=:gid AND question_order >= :order";
         Yii::app()->db->createCommand($sQuery)->bindValues(array(':sid'=>$this->iSurveyId,':gid'=>$iGid, ':order'=>$iOrder))->query();
+        if($sType=="h")
+        {
+            $sNewQuestionType="X";
+        }
+        else
+        {
+            $sNewQuestionType=$this->aDelphiCodes[$sType]['questiontype'];
+        }
         switch ($sType)
         {
             case 'hist':
@@ -1031,7 +1015,12 @@ class kceDelphi extends PluginBase {
                 $newQuestionText = "<p class='kce-default'>".$this->get("commenthist_{$this->sLanguage}", 'Survey', $this->iSurveyId,$this->get('commenthist',null,null,$this->settings['commenthist']['default']))."</p>";
                 if(isset($oQuestionComment) && $oQuestionComment->question)
                     $newQuestionText .= "<div class='kce-historycomment'>".$oQuestionComment->question."</div>";
-
+                break;
+            case "h":
+                $oQuestionComment=Question::model()->find("sid=:sid and title=:title and language=:language",array(":sid"=>$this->iSurveyId,":title"=>$sCode,":language"=>$this->sLanguage));
+                $newQuestionText = "<p class='kce-default'>".$this->get("commenthist_{$this->sLanguage}", 'Survey', $this->iSurveyId,$this->get('commenthist',null,null,$this->settings['commenthist']['default']))."</p>";
+                if(isset($oQuestionComment) && $oQuestionComment->question)
+                    $newQuestionText .= "<div class='kce-historycomment'>".$oQuestionComment->question."</div>";
                 break;
             default:
                 $newQuestionText="";
@@ -1047,7 +1036,7 @@ class kceDelphi extends PluginBase {
         $oQuestion->other = 'N';
         $oQuestion->mandatory = 'N';
         
-        $oQuestion->type=$this->aDelphiCodes[$sType]['questiontype'];
+        $oQuestion->type=$sNewQuestionType;
         $oQuestion->question_order = $iOrder;
         $oSurvey=Survey::model()->findByPk($this->iSurveyId);
         $oQuestion->language = $oSurvey->language;
@@ -1067,6 +1056,12 @@ class kceDelphi extends PluginBase {
                         break;
                     case 'commh':
                         $oQuestionComment=Question::model()->find("sid=:sid and title=:title and language=:language",array(":sid"=>$this->iSurveyId,":title"=>$sCode."comm",":language"=>$sLang));
+                        $newQuestionText = "<p class='kce-default'>".$this->get("commenthist_{$sLang}", 'Survey', $this->iSurveyId,$this->get('commenthist',null,null,$this->settings['commenthist']['default']))."</p>";
+                        if(isset($oQuestionComment) && $oQuestionComment->question)
+                            $newQuestionText .= "<div class='kce-historycomment'>".$oQuestionComment->question."</div>";
+                        break;
+                    case 'h':
+                        $oQuestionComment=Question::model()->find("sid=:sid and title=:title and language=:language",array(":sid"=>$this->iSurveyId,":title"=>$sCode,":language"=>$sLang));
                         $newQuestionText = "<p class='kce-default'>".$this->get("commenthist_{$sLang}", 'Survey', $this->iSurveyId,$this->get('commenthist',null,null,$this->settings['commenthist']['default']))."</p>";
                         if(isset($oQuestionComment) && $oQuestionComment->question)
                             $newQuestionText .= "<div class='kce-historycomment'>".$oQuestionComment->question."</div>";
@@ -1151,8 +1146,8 @@ class kceDelphi extends PluginBase {
     */
     private function getCheckQuestionSettings($iQid,$sCode,$sType)
     {
-        $oQuestionResult=Question::model()->find("sid=:sid AND language=:language AND title=:title",array(":sid"=>$this->iSurveyId,":language"=>$this->sLanguage,":title"=>"{$sCode}{$sType}"));
         $aQuestionsSettings=array();
+        $oQuestionResult=Question::model()->find("sid=:sid AND language=:language AND title=:title",array(":sid"=>$this->iSurveyId,":language"=>$this->sLanguage,":title"=>"{$sCode}{$sType}"));
         if($oQuestionResult)
         {
             $aQuestionsSettings["q[{$iQid}][{$sType}][view]"]['type']='info';
@@ -1166,18 +1161,151 @@ class kceDelphi extends PluginBase {
         }
         return $aQuestionsSettings;
     }
+    private function getValidateQuestionSettings($oQuestion)
+    {
+        $oldSchema=$this->oldSchema;
+        $aQuestionsSettings=array();
+        $sFieldName=$oQuestion->sid."X".$oQuestion->gid."X".$oQuestion->qid;
+        $aQuestionsInfo[$oQuestion->qid]=array();
+        if($aQuestionsInfo[$oQuestion->qid]['oldField']=$this->getOldField($oldSchema,$oQuestion->qid))
+        {
+
+            // Test if question is hidden (already validated)
+            $oAttributeHidden=QuestionAttribute::model()->find("qid=:qid AND attribute='hidden'",array(":qid"=>$oQuestion->qid));
+            $sQuestionTextTitle=str_replace("'",'’',FlattenText($oQuestion->question));
+            $sQuestionText=ellipsize($sQuestionTextTitle,80);
+            if($oQuestion->title!==preg_replace("/[^_a-zA-Z0-9]/", "", $oQuestion->title))
+            {
+                $aQuestionsSettings["q_{$oQuestion->qid}"]['type']='info';
+                $aQuestionsSettings["q_{$oQuestion->qid}"]['content']=CHtml::tag('div',array('class'=>'questiontitle','title'=>$sQuestionTextTitle),"<strong>Invalid title : {$oQuestion->title}</strong> : LimeSurvey 2.05 title allow only alphanumeric (no space, no dot ..)");
+            }
+            else
+            {
+                // Get the % and evaluate note
+                $aOldAnswers=$this->getOldAnswersInfo($oQuestion->qid,$oQuestion->type,$aQuestionsInfo[$oQuestion->qid]['oldField']->name);
+                $iTotal = 0;
+                $iTotalValue=0;
+                $iTotalNeg=0;
+                $iTotalPos=0;
+
+                foreach ($aOldAnswers as $aOldAnswer) {
+                    $iTotal += $aOldAnswer['count'];
+                    if($aOldAnswer['assessment_value'])
+                        $iTotalValue += $aOldAnswer['count'];
+                    if(intval($aOldAnswer['assessment_value'])<0)
+                        $iTotalNeg += $aOldAnswer['count'];
+                    if(intval($aOldAnswer['assessment_value'])>0)
+                        $iTotalPos += $aOldAnswer['count'];
+                }
+                $sHtmlTable="";
+                $hiddenPart="";
+                $bValidate=false;
+                $iScore=0;
+
+                if($iTotalValue)
+                {
+                    $sHtmlTable.="<table class='kce-table clearfix table table-striped table-bordered'><thead><td></td><th>count</th><th>%</th></thead><tbody>";
+                    $iTotalPosPC=number_format($iTotalPos/$iTotalValue*100)."%";
+                    $iTotalNegPC=number_format($iTotalNeg/$iTotalValue*100)."%";
+                    $sHtmlTable.="<tr><th>Upper than 0</th><td>{$iTotalPos}</td><td>{$iTotalPosPC}</td></tr>";
+                    $sHtmlTable.="<tr><th>Lesser than 0</th><td>{$iTotalNeg}</td><td>{$iTotalNegPC}</td></tr>";
+                    $sHtmlTable.="</tbody></table>";
+                }
+                $sHtmlTable.="<table class='kce-table clearfix table table-striped table-bordered'><thead><td></td><th>count</th><th>%</th>";
+                $sHtmlTable.="<th>% cumulative</th>";
+                if($iTotalValue)
+                {
+                    $sHtmlTable.="<th>% with value</th>";
+                    $sHtmlTable.="<th>% cumulative with value</th>";
+                }
+                $sHtmlTable.="</thead><tbody>";
+                $cumulBrut=0;
+                $cumulValue=0;
+                foreach ($aOldAnswers as $sCode=>$aOldAnswer)
+                {
+                    $sHtmlTable.="<tr>";
+                    $sHtmlTable.="<th title='".str_replace("'",'’',FlattenText($aOldAnswer['answer']))."'>{$sCode} : <small>".ellipsize(FlattenText($aOldAnswer['answer']),60)."</small></th>";
+                    $sHtmlTable.="<td>{$aOldAnswer['count']}</td>";
+                    if($iTotal>0)
+                    {
+                        $sHtmlTable.="<td>".number_format($aOldAnswer['count']/$iTotal*100)."%"."</td>";
+                        $cumulBrut+=$aOldAnswer['count'];
+                        $sHtmlTable.="<td>".number_format($cumulBrut/$iTotal*100)."%"."</td>";
+                    }
+                    else
+                        $sHtmlTable.="<td>/</td><td>/</td>";
+                    if($iTotalValue>0)
+                    {
+                        if(intval($aOldAnswer['assessment_value'])!=0)
+                        {
+                            $sHtmlTable.="<td>".number_format($aOldAnswer['count']/$iTotalValue*100)."%"."</td>";
+                            $cumulValue+=$aOldAnswer['count'];
+                            $sHtmlTable.="<td>".number_format($cumulValue/$iTotalValue*100)."%"."</td>";
+                        }else{
+                            $sHtmlTable.="<td>/</td><td>/</td>";
+                        }
+                    }
+                    $sHtmlTable.="</tr>";
+                }
+                $sHtmlTable.="</tbody></table>";
+
+                    //~ $aHtmlListQuestion.="<dt title='".str_replace("'",'’',FlattenText($aOldAnswer['answer']))."'>{$sCode} : <small>".ellipsize(FlattenText($aOldAnswer['answer']),60)."</small></dt>"
+                                    //~ ."<dd>".$aOldAnswer['count']." : ";
+//~ 
+                    //~ if($iTotal>0)
+                    //~ {
+                        //~ $aHtmlListQuestion.=number_format($aOldAnswer['count']/$iTotal*100)."%";
+                        //~ $hiddenPart.=CHtml::hiddenField("value[{$oQuestion->qid}][{$sCode}]",$aOldAnswer['count']/$iTotal);
+                    //~ }
+                    //~ $aHtmlListQuestion.="</dd>";
+                    //~ $iScore+=$aOldAnswer['count']*$aOldAnswer['assessment_value'];
+                    //~ $aHtmlListQuestions[]=$aHtmlListQuestion;
+                //~ }
+
+
+                $aQuestionsSettings["q_{$oQuestion->qid}"]['type']='info';
+                $aQuestionsSettings["q_{$oQuestion->qid}"]['content']="<div class='questiontitle' title='{$sQuestionTextTitle}'><strong class='label label-info'>{$oQuestion->title}</strong> : {$sQuestionText}</div><div class='oldresult  clearfix'>"
+                    .$sHtmlTable
+                    ."</div>"
+                    .$hiddenPart;
+
+                $aQuestionsSettings["validate[{$oQuestion->qid}]"]['type']='select';
+                $aQuestionsSettings["validate[{$oQuestion->qid}]"]['label']="Validation of this question";
+                $aQuestionsSettings["validate[{$oQuestion->qid}]"]['options']=array(
+                    'hide'=>"Hide it to respondant",
+                    'show'=>"Show it to respondant",
+                );
+                $aQuestionsSettings["validate[{$oQuestion->qid}]"]['current']=($oAttributeHidden && $oAttributeHidden->value) ? 'hide' : 'show';
+
+                foreach($this->aDelphiCodes as $sDelphiCode=>$aSettings)
+                {
+                    $aQuestionsSettings=array_merge($aQuestionsSettings,$this->getComplementValidateQuestionSettings($oQuestion->qid,$oQuestion->title,$sDelphiCode));
+                }
+            }
+        }
+        else
+        {
+            $oAttributeHidden=QuestionAttribute::model()->find("qid=:qid AND attribute='hidden'",array(":qid"=>$oQuestion->qid));
+            $sQuestionTextTitle=str_replace("'",'’',FlattenText($oQuestion->question));
+            $sQuestionText=ellipsize($sQuestionTextTitle,80);
+            $aQuestionsSettings["q_".$oQuestion->qid]['type']='info';
+            $aQuestionsSettings["q_".$oQuestion->qid]['content']="<strong class='questiontitle' title='{$sQuestionTextTitle}'>{$oQuestion->title}</strong> : no corresponding question";
+        }
+        return $aQuestionsSettings;
+    }
     /**
     * @param $iQid : base question qid
     * @param $sCode : base question title
     * @param $sType : new question type
     */
-    private function getValidateQuestionSettings($iQid,$sCode,$sType,$sValue=NULL)
+    private function getComplementValidateQuestionSettings($iQid,$sCode,$sType,$sValue=NULL)
     {
+        $aQuestionsSettings=array();
         $aDelphiCodes=$this->aDelphiCodes;
         $oQuestionResult=Question::model()->find("sid=:sid AND language=:language AND title=:title",array(":sid"=>$this->iSurveyId,":language"=>$this->sLanguage,":title"=>"{$sCode}{$sType}"));
         if(isset($this->aDelphiCodes[$sType]['select']))
         {
-            $sLabel=$this->aDelphiCodes[$sType]['select']['label'];
+            $sLabel="<span class='label'>{$sCode}{$sType}</span>".$this->aDelphiCodes[$sType]['select']['label'];
             // Add list of comment 
             if($sType=="comh")
             {
@@ -1201,6 +1329,7 @@ class kceDelphi extends PluginBase {
                 else
                     $sLabel="<span class='label label-warning'>No old question</span> {$sLabel}";
             }
+
             $aQuestionsSettings["q[{$iQid}][{$sType}][select]"]['type']='select';
             $aQuestionsSettings["q[{$iQid}][{$sType}][select]"]['label']=$sLabel;
             $aOptions=$this->aDelphiCodes[$sType]['select']['options'];
@@ -1208,7 +1337,6 @@ class kceDelphi extends PluginBase {
             {
                 unset($aOptions['none']);
                 unset($aOptions['create']);
-                unset($aOptions['test']);
                 if(QuestionAttribute::model()->find("qid=:qid AND attribute='hidden'",array(":qid"=>$oQuestionResult->qid)))
                     $aQuestionsSettings["q[{$iQid}][{$sType}][select]"]['current']='hide';
                 else
@@ -1219,11 +1347,13 @@ class kceDelphi extends PluginBase {
                 unset($aOptions['hide']);
                 unset($aOptions['update']);
                 unset($aOptions['show']);
-                unset($aOptions['test']);
                 $aQuestionsSettings["q[{$iQid}][{$sType}][select]"]['current']='none';
 
             }
-            $aQuestionsSettings["q[{$iQid}][{$sType}][select]"]['options']=$aOptions;
+            if(count($aOptions))
+                $aQuestionsSettings["q[{$iQid}][{$sType}][select]"]['options']=$aOptions;
+            else
+                unset($aQuestionsSettings["q[{$iQid}][{$sType}][select]"]);
         }
         else
         {
@@ -1256,6 +1386,67 @@ class kceDelphi extends PluginBase {
                 $aQuestionsSettings["q[{$iQid}][{$sType}][createupdate]"]['current']=$bCurrent;
             }
         }
+        return $aQuestionsSettings;
+    }
+    private function getCommentQuestionSettings($oQuestion)
+    {
+        $oldSchema=$this->oldSchema;
+        $aQuestionsSettings=array();
+        $sFieldName=$oQuestion->sid."X".$oQuestion->gid."X".$oQuestion->qid;
+        $aQuestionsInfo[$oQuestion->qid]=array();
+        $oAttributeHidden=QuestionAttribute::model()->find("qid=:qid AND attribute='hidden'",array(":qid"=>$oQuestion->qid));
+        $sQuestionTextTitle=str_replace("'",'’',FlattenText($oQuestion->question));
+        $sQuestionText=ellipsize($sQuestionTextTitle,50);
+        if($oQuestion->title!==preg_replace("/[^_a-zA-Z0-9]/", "", $oQuestion->title))
+        {
+            $aQuestionsSettings["q_{$oQuestion->qid}"]['type']='info';
+            $aQuestionsSettings["q_{$oQuestion->qid}"]['content']=CHtml::tag('div',array('class'=>'questiontitle','title'=>$sQuestionTextTitle),"<strong>Invalid title : {$oQuestion->title}</strong> : LimeSurvey 2.05 title allow only alphanumeric (no space, no dot ..)");
+        }
+        else
+        {
+            $aQuestionsSettings["validate[{$oQuestion->qid}]"]['type']='select';
+            $aQuestionsSettings["validate[{$oQuestion->qid}]"]['label']="<div class='' title='{$sQuestionTextTitle}'><span class='label'>{$oQuestion->title}</span> : {$sQuestionText}</div>";
+            $aQuestionsSettings["validate[{$oQuestion->qid}]"]['options']=array(
+                'hide'=>"Hide it to respondant",
+                'show'=>"Show it to respondant",
+            );
+            $aQuestionsSettings["validate[{$oQuestion->qid}]"]['current']=($oAttributeHidden && $oAttributeHidden->value) ? 'hide' : 'show';
+            // Adding history question
+            
+        }
+        if($aQuestionsInfo[$oQuestion->qid]['oldField']=$this->getOldField($oldSchema,$oQuestion->qid))
+        {
+            // Adding history question only if we have old field
+            // Find if history exist
+            $oHistoryQuestion=Question::model()->find("sid=:sid AND language=:language AND title=:title",array(":sid"=>$this->iSurveyId,":language"=>$this->sLanguage,":title"=>"{$oQuestion->title}h"));
+            $aSettings=array(
+                'type'=>"select",
+                'label'=>"<span class='label'>{$oQuestion->title}h</span>Comments from the previous round (automatic)",
+                'options'=>array(
+                    'none'=>'No creation of this question',
+                    'hide'=>'Hide this question',
+                    'create'=>"Create question with the new comment list (and Show it)",
+                    'update'=>"Update question with the new comment list (and Show it)",
+                    "show"=>"Show the question",
+                ),
+            );
+            if($oHistoryQuestion)
+            {
+                $oAttributeHidden=QuestionAttribute::model()->find("qid=:qid AND attribute='hidden'",array(":qid"=>$oHistoryQuestion->qid));
+                unset($aSettings['options']['none']);
+                unset($aSettings['options']['create']);
+                $aSettings['current']=($oAttributeHidden && $oAttributeHidden->value) ? 'hide' : 'show';
+            }
+            else
+            {
+                unset($aSettings['options']['hide']);
+                unset($aSettings['options']['update']);
+                unset($aSettings['options']['show']);
+                $aSettings['current']='none';
+            }
+            $aQuestionsSettings["commhist[{$oQuestion->qid}]"]=$aSettings;
+        }
+
         return $aQuestionsSettings;
     }
     private function htmlListFromQueryAll($aStrings, $htmlOptions=array())
