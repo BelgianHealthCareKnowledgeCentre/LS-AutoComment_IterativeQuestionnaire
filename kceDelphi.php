@@ -24,7 +24,7 @@ class kceDelphi extends PluginBase {
 
     protected $storage = 'DbStorage';
     static protected $name = 'Delphi for KCE';
-    static protected $description = 'Activate the Delphi method for Delphi - v2.2';
+    static protected $description = 'Activate the Delphi method for Delphi - v3.0';
 
     private $iSurveyId=false;
     private $bSurveyActivated=false;
@@ -69,7 +69,7 @@ class kceDelphi extends PluginBase {
                                             'create'=>"Create question with default text (and Show it)",
                                         ),
                                     ),
-                                'condition'=>"QCODE.valueNAOK < 0",
+                                'condition'=>"{QCODE}.valueNAOK< 0",
                                 'hidevalidate'=>false,
                             ),
                         );
@@ -1416,12 +1416,28 @@ class kceDelphi extends PluginBase {
         }
         if($aQuestionsInfo[$oQuestion->qid]['oldField']=$this->getOldField($oldSchema,$oQuestion->qid))
         {
+            $sColumnName=$this->getOldField($this->oldSchema,$oQuestion->qid);
+            if($sColumnName)
+            {
+                $oldAnswerText =$this->getOldAnswerText($sColumnName->name);
+            }else{
+                $oldAnswerText =null;
+            }
+            // Do label
+            if($oldAnswerText)
+            {
+                $sLabel="<span class='label'>{$oQuestion->title}h</span> <div class='kcetitle'>$oldAnswerText</div><span class='label label-inverse' data-kcetitle='true'>See</span> comments from the previous round (automatic)";
+            }
+            else
+            {
+                $sLabel="<span class='label'>{$oQuestion->title}h</span>No comments from the previous round (automatic)";
+            }
             // Adding history question only if we have old field
             // Find if history exist
             $oHistoryQuestion=Question::model()->find("sid=:sid AND language=:language AND title=:title",array(":sid"=>$this->iSurveyId,":language"=>$this->sLanguage,":title"=>"{$oQuestion->title}h"));
             $aSettings=array(
                 'type'=>"select",
-                'label'=>"<span class='label'>{$oQuestion->title}h</span>Comments from the previous round (automatic)",
+                'label'=>$sLabel,
                 'options'=>array(
                     'none'=>'No creation of this question',
                     'hide'=>'Hide this question',
@@ -1432,6 +1448,7 @@ class kceDelphi extends PluginBase {
             );
             if($oHistoryQuestion)
             {
+
                 $oAttributeHidden=QuestionAttribute::model()->find("qid=:qid AND attribute='hidden'",array(":qid"=>$oHistoryQuestion->qid));
                 unset($aSettings['options']['none']);
                 unset($aSettings['options']['create']);
