@@ -12,3 +12,7 @@ width:60%;
 .settingswidget input.large{min-width:30em}
 .settingswidget .select2-container{min-width:20em}
 .settingswidget .setting table{display:table}
+
+.select2-container{max-width:55%}
+
+#validatekce .settingswidget{width:99%}

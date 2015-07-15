@@ -79,6 +79,13 @@ color: #0088cc;text-decoration:underline;
 }
 
 .kcetitle{display:none}
+
 .kce-table th, .kce-table td {
     padding: 2px;
+}
+.old-answers-list .kce-answerstext{
+    list-style: square inside none;font-size:0.9em;
+}
+.old-answers-list .kce-answerstext li{
+    list-style: square inside none;line-height:1.3;padding:0;
 }
