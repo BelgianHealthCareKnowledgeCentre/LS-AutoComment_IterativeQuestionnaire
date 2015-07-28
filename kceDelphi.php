@@ -360,6 +360,10 @@ class kceDelphi extends PluginBase {
                 'type' => 'select',
                 'options' => $list,
             );
+            $aData['settings']['withuncompleted'] = array(
+                'label' => gT('Not completed'),
+                'type' => 'checkbox',
+            );
             $aData['buttons'] = array(
                 gT('Validate question before import') => array(
                     'name' => 'confirm'
@@ -373,6 +377,7 @@ class kceDelphi extends PluginBase {
                 'type' => 'info',
                 'content' => CHtml::tag('div',array('class'=>'alert'),'You have old survey table, but no answer inside'),
             );
+
             $aData['buttons'] = array(
                 gT('Cancel') => array(
                     'name' => 'cancel'
@@ -427,6 +432,11 @@ class kceDelphi extends PluginBase {
                 'options' => array($sTableName=>$sTableName),
                 'current' => $sTableName,
                 'class'=>'hidden'
+            );
+            $aSurveySettings['withuncompleted'] = array(
+                'label' => gT('Not completed'),
+                'type' => 'checkbox',
+                'current' => App()->request->getPost('withuncompleted'),
             );
             $aData['aSettings']=array_merge($aQuestionsSettings,$aSurveySettings);
             $aData['updateUrl']=$this->api->createUrl('plugins/direct', array('plugin' => 'kceDelphi','surveyid'=>$this->iSurveyId, 'function' => 'validate'));
@@ -618,20 +628,29 @@ class kceDelphi extends PluginBase {
     private function countOldAnswers($sField,$sValue="")
     {
         $sQuotedField=Yii::app()->db->quoteColumnName($sField);
-        return PluginDynamic::model($this->sTableName)->count("submitdate IS NOT NULL AND {$sQuotedField}=:field{$sField}", array(":field{$sField}"=>$sValue));
+        if(App()->request->getPost('withuncompleted'))
+            return PluginDynamic::model($this->sTableName)->count("{$sQuotedField}=:field{$sField}", array(":field{$sField}"=>$sValue));
+        else
+            return PluginDynamic::model($this->sTableName)->count("submitdate IS NOT NULL AND {$sQuotedField}=:field{$sField}", array(":field{$sField}"=>$sValue));
     }
     private function getOldAnswerText($sField)
     {
         $sQuotedField=Yii::app()->db->quoteColumnName($sField);
         //return Yii::app()->db->createCommand("SELECT {$sQuotedField} FROM {{{$this->sTableName}}} WHERE {$sQuotedField} IS NOT NULL AND  {$sQuotedField}!=''")->queryAll();
         //Problem on prefix
-        $aResult=Yii::app()->db->createCommand("SELECT {$sQuotedField} FROM {$this->sTableName} WHERE submitdate IS NOT NULL AND {$sQuotedField} IS NOT NULL AND {$sQuotedField}!=''")->queryAll();
+        if(App()->request->getPost('withuncompleted'))
+            $aResult=Yii::app()->db->createCommand("SELECT {$sQuotedField} FROM {$this->sTableName} WHERE {$sQuotedField} IS NOT NULL AND {$sQuotedField}!=''")->queryAll();
+        else
+            $aResult=Yii::app()->db->createCommand("SELECT {$sQuotedField} FROM {$this->sTableName} WHERE submitdate IS NOT NULL AND {$sQuotedField} IS NOT NULL AND {$sQuotedField}!=''")->queryAll();
         return $this->htmlListFromQueryAll($aResult);
     }
     private function getOldAnswerTable($iQid,$sType,$sLang)
     {
         $sOldLanguage=App()->language;
         App()->setLanguage($sLang);
+        $clang=new Limesurvey_lang($sLang,true);
+
+
         $this->sLanguage=$sLang;
         $htmlOldAnswersTable="";
         $oldSchema=$this->oldSchema;
@@ -639,16 +658,15 @@ class kceDelphi extends PluginBase {
         if($oldField && $oldField->name)
         {
             $aOldAnswers=$this->getOldAnswersInfo($iQid,$sType,$oldField->name);
-            tracevar($aOldAnswers);
             $iTotalValue=0;
             foreach ($aOldAnswers as $aOldAnswer) {
                 if($aOldAnswer['assessment_value']!=0)
                     $iTotalValue += $aOldAnswer['count'];
             }
-            //~ if($iTotalValue>0)
-            //~ {
+            if($iTotalValue>0)
+            {
                 $htmlOldAnswersTable = "<table class='kce-table'><thead><tr><td></td>";
-                $htmlOldAnswersTable.= CHtml::tag('th',array(),gt('count'));
+                $htmlOldAnswersTable.= CHtml::tag('th',array(),$clang->gt('Count'));
                 $htmlOldAnswersTable.= CHtml::tag('th',array(),'%');
                 $htmlOldAnswersTable.= "</tr></thead><tbody>";
                 foreach ($aOldAnswers as $aOldAnswer) {
@@ -662,10 +680,18 @@ class kceDelphi extends PluginBase {
                         $htmlOldAnswersTable.= "</tr>";
                     }
                 }
+                $htmlOldAnswersTable.= "<tr>";
+                $htmlOldAnswersTable.= CHtml::tag('th',array(),$clang->gt('Total'));
+                $htmlOldAnswersTable.= CHtml::tag('td',array(),$iTotalValue);
+                $htmlOldAnswersTable.= CHtml::tag('td',array(),"100%");
+                $htmlOldAnswersTable.= "</tr>";
                 $htmlOldAnswersTable.= "</tbody></table>";
-            //~ }
+            }
         }
         App()->setLanguage($sOldLanguage);
+        $this->sLanguage=$sOldLanguage;
+        $clang=new Limesurvey_lang($sOldLanguage);
+
         return $htmlOldAnswersTable;
 
     }
@@ -803,15 +829,6 @@ class kceDelphi extends PluginBase {
                 }
             }
             $iOrder=$oQuestionBase->question_order;
-            // Find order
-            //~ foreach($aDelphiKeys as $sDelphiKey)
-            //~ {
-                //~ if($sType==$sDelphiKey)
-                    //~ break;
-                //~ $oQuestionOrder=Question::model()->find("sid=:sid AND gid=:gid AND language=:language AND title=:title",array(":sid"=>$this->iSurveyId,":gid"=>$iGid,":language"=>$this->sLanguage,":title"=>"{$sCode}{$sDelphiKey}"));
-                //~ if($oQuestionOrder)
-                    //~ $iOrder=$oQuestionOrder->question_order;
-            //~ }
             if($sType=="comm")
                 $iOrder++;
             if($iNewQid=$this->createQuestion($sCode,$sType,$iGid,$iOrder))
@@ -1004,7 +1021,7 @@ class kceDelphi extends PluginBase {
                             $baseQuestionText =$this->getOldAnswerText($sColumnName->name);
                             foreach($aLangs as $sLang)
                             {
-                                $oQuestionCommentLang=Question::model()->find("sid=:sid AND language=:language AND qid=:qid",array(":sid"=>$this->iSurveyId,":language"=>$this->sLanguage,":qid"=>$oQuestionBase->qid));
+                                $oQuestionCommentLang=Question::model()->find("sid=:sid AND language=:language AND qid=:qid",array(":sid"=>$this->iSurveyId,":language"=>$sLang,":qid"=>$oQuestionBase->qid));
                                 if($oQuestionCommentLang)
                                     $newQuestionHelp="<div class='kce-content'><div class='kce-question-comment'>".$oQuestionCommentLang->question."</div>".$baseQuestionText."</div>";
                                 else
@@ -1250,7 +1267,7 @@ class kceDelphi extends PluginBase {
                 $bValidate=false;
                 $iScore=0;
 
-                if($iTotalValue)
+                if($iTotalValue && false)
                 {
                     $sHtmlTable.="<table class='kce-table clearfix table table-striped table-bordered'><thead><td></td><th>count</th><th>%</th></thead><tbody>";
                     $iTotalPosPC=number_format($iTotalPos/$iTotalValue*100)."%";
@@ -1259,7 +1276,7 @@ class kceDelphi extends PluginBase {
                     $sHtmlTable.="<tr><th>Lesser than 0</th><td>{$iTotalNeg}</td><td>{$iTotalNegPC}</td></tr>";
                     $sHtmlTable.="</tbody></table>";
                 }
-                $sHtmlTable.="<table class='kce-table clearfix table table-striped table-bordered'><thead><td></td><th>count</th><th>%</th>";
+                $sHtmlTable.="<table class='kce-table clearfix table table-striped table-bordered'><thead><td></td><th>".gt("Count")."</th><th>%</th>";
                 $sHtmlTable.="<th>% cumulative</th>";
                 if($iTotalValue)
                 {
@@ -1295,6 +1312,16 @@ class kceDelphi extends PluginBase {
                     }
                     $sHtmlTable.="</tr>";
                 }
+                $sHtmlTable.="<tr><th>".gt("Total")."</th>";
+                $sHtmlTable.="<td>{$iTotal}</td>";
+                $sHtmlTable.="<td>{$iTotal}</td>";
+                $sHtmlTable.="<td>{$iTotal}</td>";
+                if($iTotalValue>0)
+                {
+                    $sHtmlTable.="<td>{$iTotalValue}</td>";
+                    $sHtmlTable.="<td>{$iTotalValue}</td>";
+                }
+                $sHtmlTable.="</tr>";
                 $sHtmlTable.="</tbody></table>";
 
                     //~ $aHtmlListQuestion.="<dt title='".str_replace("'",'’',FlattenText($aOldAnswer['answer']))."'>{$sCode} : <small>".ellipsize(FlattenText($aOldAnswer['answer']),60)."</small></dt>"
@@ -1368,8 +1395,6 @@ class kceDelphi extends PluginBase {
                         if($baseQuestionText){
                             $jsonBaseQuestionText=json_encode($baseQuestionText);
                             $sLabel="<div class='kcetitle'>$baseQuestionText</div><span class='label' data-kcetitle='true'>See previous comments</span> {$sLabel}";
-                            
-                        
                         }else
                             $sLabel="<span class='label label-warning'>No old answers</span> {$sLabel}";
                     }
@@ -1455,7 +1480,7 @@ class kceDelphi extends PluginBase {
         else
         {
             $aQuestionsSettings["validate[{$oQuestion->qid}]"]['type']='select';
-            $aQuestionsSettings["validate[{$oQuestion->qid}]"]['label']="<div class='' title='{$sQuestionTextTitle}'><span class='label'>{$oQuestion->title}</span> : {$sQuestionText}</div>";
+            $aQuestionsSettings["validate[{$oQuestion->qid}]"]['label']="<div class='' title='{$sQuestionTextTitle}'><span class='label label-info'>{$oQuestion->title}</span> : {$sQuestionText}</div>";
             $aQuestionsSettings["validate[{$oQuestion->qid}]"]['options']=array(
                 'hide'=>"Don't ask this question",
                 'show'=>"Ask this question",
@@ -1477,13 +1502,13 @@ class kceDelphi extends PluginBase {
             if($oldAnswerText)
             {
                 $sLabel="<span class='label'>{$oQuestion->title}h</span> <div class='kcetitle'>$oldAnswerText</div><span class='label label-inverse' data-kcetitle='true'>See</span> comments from the previous round (automatic)";
-                $sLabel="<span class='label'>{$oQuestion->title}h</span>comments from the previous round (automatic)";
-                $sLabel.="<div class='old-answers-list'>".$oldAnswerText."</div>";
+                //$sLabel="<span class='label'>{$oQuestion->title}h</span>comments from the previous round (automatic)";
+                //$sLabel.="<div class='old-answers-list'>".$oldAnswerText."</div>";
             
             }
             else
             {
-                $sLabel="<span class='label'>{$oQuestion->title}h</span>No comments from the previous round (automatic)";
+                $sLabel="<span class='label'>{$oQuestion->title}h</span> <span class='label label-warning'>No</span> comments from the previous round (automatic)";
             }
             // Adding history question only if we have old field
             // Find if history exist

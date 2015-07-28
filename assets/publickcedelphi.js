@@ -2,7 +2,7 @@ $(".kce-content").closest("[id^='question']").addClass("kce-question");
 $(".kce-content").parent().addClass("kce-accordion");
 
 $(".kce-question .question-wrapper").addClass("kce-block");
-$(".kce-question .questiontext").addClass("kce-title");
+$(".kce-question .asterisk").parent().addClass("kce-title");
 $(".kce-block").addClass("ui-widget").addClass("ui-widget-content").addClass("ui-corner-all");
 $(".kce-question .kce-accordion").find("img:first").remove();
 $(".kce-accordion" ).addClass("ui-widget-content");

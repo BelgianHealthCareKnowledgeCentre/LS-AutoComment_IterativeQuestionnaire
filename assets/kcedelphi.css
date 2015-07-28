@@ -1,3 +1,10 @@
+.clearfix { *zoom:1; }
+.clearfix:before, .clearfix:after {
+    display:table;
+    content:"";
+    line-height:0;
+}
+.clearfix:after { clear:both; }
 a.kcebtn:link,a.kcebtn:visited {
     text-decoration: underline;
 }
@@ -25,6 +32,7 @@ margin: 0 1em;
 padding: 0;
 }
 table.kce-table{
+display:table;
 
 }
 table.kce-table thead th{
