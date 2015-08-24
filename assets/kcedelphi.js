@@ -1,16 +1,17 @@
-$( document ).tooltip(
-    {
-        items: "[data-kcetitle], [title]",
-        content: function() {
-        var element = $( this );
-        if ( element.is( "[data-kcetitle]" ) ) {
-            return $(element).prev(".kcetitle").html();
-        }
-        if ( element.is( "[title]" ) ) {
-            return element.attr( "title" );
-        }
-      }
- });
+//$( document ).tooltip(
+//    {
+//        items: "[data-kcetitle], [title]",
+//        tooltipClass: "kce-tooltip",
+//        content: function() {
+//        var element = $( this );
+//        if ( element.is( "[data-kcetitle]" ) ) {
+//            return $(element).prev(".kcetitle").html();
+//        }
+//        if ( element.is( "[title]" ) ) {
+//            return element.attr( "title" );
+//        }
+//      }
+// });
 
 function showDialog(){
     return false;
@@ -29,4 +30,37 @@ $(document).on("click",'a[rel="external"]',function(event){
             +'</div>'
             +'</div>'
     $(htmlelement).modal({show:true})
+});
+
+// Tooltip click
+$(document).on("click", "[data-kcetitle]", function() {
+    $(this).tooltip(
+        { 
+            items: "[data-kcetitle]",
+            tooltipClass: "kce-tooltip",
+            content: function(){
+                return $(this).prev(".kcetitle").html();
+            }, 
+            close: function( event, ui ) {
+                var me = this;
+                ui.tooltip.hover(
+                    function () {
+                        $(this).stop(true).fadeTo(400, 1); 
+                    },
+                    function () {
+                        $(this).fadeOut("400", function(){
+                            $(this).remove();
+                        });
+                    }
+                );
+                ui.tooltip.on("remove", function(){
+                    $(me).tooltip("destroy");
+                });
+          },
+        }
+    );
+    $(this).tooltip("open");
+//    $(this).on("mouseleave", function (e) {
+//        e.stopImmediatePropagation();
+//    });
 });
