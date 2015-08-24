@@ -747,7 +747,11 @@ class kceDelphi extends PluginBase {
     private function doQuestion($iQid,$sType,$sAction,$oldSchema=NULL,$sDo=null)
     {
         // Validate the delphi question
-        $oQuestionBase=Question::model()->find("sid=:sid AND language=:language AND qid=:qid",array(":sid"=>$this->iSurveyId,":language"=>$this->sLanguage,":qid"=>"{$iQid}"));
+        $oQuestionBase=Question::model()->find("sid=:sid AND language=:language AND qid=:qid",array(":sid"=>$this->iSurveyId,":language"=>$this->sLanguage,":qid"=>$iQid));
+        if(!$oQuestionBase && $sDo=="none")
+        {
+            return false;
+        }
         if(!$oQuestionBase)
         {
             $this->addResult("No question {$iQid} in survey",'error');
