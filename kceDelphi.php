@@ -7,7 +7,7 @@
  * @copyright 2014-2015 Denis Chenu <http://sondages.pro>
  * @copyright 2014-2015 Belgian Health Care Knowledge Centre (KCE) <http://kce.fgov.be>
  * @license GPL v3
- * @version 3.3.0
+ * @version 3.4.0
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -657,11 +657,9 @@ class kceDelphi extends PluginBase {
     }
     private function getOldAnswerTable($iQid,$sType,$sLang)
     {
-        $sOldLanguage=App()->language;
+        $sOldLanguage=App()->session['adminlang'];
         App()->setLanguage($sLang);
         $clang=new Limesurvey_lang($sLang,true);
-
-
         $this->sLanguage=$sLang;
         $htmlOldAnswersTable="";
         $oldSchema=$this->oldSchema;
@@ -699,9 +697,10 @@ class kceDelphi extends PluginBase {
                 $htmlOldAnswersTable.= "</tbody></table>";
             }
         }
-        App()->setLanguage($sOldLanguage);
-        $this->sLanguage=$sOldLanguage;
-        $clang=new Limesurvey_lang($sOldLanguage);
+        App()->setLanguage(App()->session['adminlang']);
+        $this->sLanguage=App()->session['adminlang'];
+
+        $clang=new Limesurvey_lang(App()->session['adminlang']);
 
         return $htmlOldAnswersTable;
 
@@ -759,13 +758,10 @@ class kceDelphi extends PluginBase {
     {
         // Validate the delphi question
         $oQuestionBase=Question::model()->find("sid=:sid AND language=:language AND qid=:qid",array(":sid"=>$this->iSurveyId,":language"=>$this->sLanguage,":qid"=>$iQid));
-        if(!$oQuestionBase && $sDo=="none")
-        {
-            return false;
-        }
+
         if(!$oQuestionBase)
         {
-            $this->addResult("No question {$iQid} in survey",'error');
+            $this->addResult("No question {$iQid} in survey : {$sDo} - {$this->sLanguage}",'error');
             return false;
         }
         if($sDo)
