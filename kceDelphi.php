@@ -264,11 +264,7 @@ class kceDelphi extends PluginBase {
             App()->controller->redirect(array('admin/survey','sa'=>'view','surveyid'=>$this->iSurveyId));
         }
 
-        $aOtherLanguage=explode(" ",$oSurvey->additional_languages);
-        if(in_array(Yii::app()->lang->langcode,$aOtherLanguage))
-            $this->sLanguage=Yii::app()->lang->langcode;
-        else
-            $this->sLanguage=$oSurvey->language;
+        $this->setBaseLanguage();
         if($sAction=='view')
             $this->actionView();
         elseif($sAction=='validate')
@@ -280,7 +276,15 @@ class kceDelphi extends PluginBase {
         else
             throw new CHttpException(404,'Unknow action');
     }
-
+    public function setBaseLanguage()
+    {
+        $oSurvey=Survey::model()->findByPk($this->iSurveyId);
+        $aOtherLanguage=explode(" ",$oSurvey->additional_languages);
+        if(in_array(App()->session['adminlang'],$aOtherLanguage))
+            $this->sLanguage=Yii::app()->lang->langcode;
+        else
+            $this->sLanguage=$oSurvey->language;
+    }
     public function actionCheck()
     {
     
@@ -698,7 +702,8 @@ class kceDelphi extends PluginBase {
             }
         }
         App()->setLanguage(App()->session['adminlang']);
-        $this->sLanguage=App()->session['adminlang'];
+
+        $this->setBaseLanguage();
 
         $clang=new Limesurvey_lang(App()->session['adminlang']);
 
@@ -879,6 +884,7 @@ class kceDelphi extends PluginBase {
                     }
                     break;
                 case 'hist':
+                    $bGoood=true;
                     foreach($aLangs as $sLang)
                     {
                         $oQuestionBase=Question::model()->find("sid=:sid AND qid=:qid AND language=:language",array(":sid"=>$this->iSurveyId,":qid"=>$iQid,":language"=>$sLang));
@@ -891,11 +897,12 @@ class kceDelphi extends PluginBase {
                             }
                             $newQuestionHelp = "<div class='kce-content'>".$newQuestionHelp."<div>";
                             Question::model()->updateAll(array('help'=>$newQuestionHelp),"sid=:sid AND title=:title AND language=:language",array(":sid"=>$this->iSurveyId,":title"=>$oQuestionBase->title.$sType,":language"=>$sLang));
-                            $this->addResult("{$oQuestionBase->title}{$sType} question help updated",'success');
                         }else{
                             $this->addResult("Unable to find $iQid to update history for language $sLang.",'error');
                         }
                     }
+                    if($bGoood)
+                        $this->addResult("{$oQuestionBase->title}{$sType} (".join(",",$aLangs).") question help updated",'success');
                     break;
                 case 'comm':
                     break;
@@ -913,7 +920,7 @@ class kceDelphi extends PluginBase {
                                 $newQuestionHelp="<div class='kce-content'>".$baseQuestionText."</div>";
                                 Question::model()->updateAll(array('help'=>$newQuestionHelp),"sid=:sid AND title=:title AND language=:language",array(":sid"=>$this->iSurveyId,":title"=>$oQuestionBase->title.$sType,":language"=>$sLang));
                             }
-                            $this->addResult("{$oQuestionBase->title}{$sType} question help updated with list of answer",'success');
+                            $this->addResult("{$oQuestionBase->title}{$sType} (".join(",",$aLangs)." question help updated with list of answer",'success');
                         }
                         else
                         {
@@ -1039,7 +1046,7 @@ class kceDelphi extends PluginBase {
                                     $newQuestionHelp="<div class='kce-content'>".$baseQuestionText."</div>";
                                 Question::model()->updateAll(array('help'=>$newQuestionHelp),"sid=:sid AND qid=:qid AND language=:language",array(":sid"=>$this->iSurveyId,":qid"=>$oQuestion->qid,":language"=>$sLang));
                             }
-                            $this->addResult("{$oQuestionBase->title}h question help updated with list of answer",'success');
+                            $this->addResult("{$oQuestionBase->title}h (".join(",",$aLangs).") question help updated with list of answer",'success');
                         }
                         else
                         {
