@@ -31,6 +31,7 @@ class kceDelphi extends PluginBase {
     private $sTableName="";
     private $sError="Unknow error.";
     private $sLanguage="";
+    private $bUpdateHistory=false;
     private static $aValidQuestion=array("!","L","O");
     private static $aTextQuestion=array("S","T","U");
 
@@ -44,11 +45,11 @@ class kceDelphi extends PluginBase {
                                 'select'=>array(
                                     'label'=>"Display the question (text) from the previous round",
                                     'options'=>array(
-                                        'none'=>'No, do not display it (no creation)',
+                                        'none'=>'No, do not display it',
                                         'hide'=>'No, do not display it',
-                                        'create'=>"Yes, display it, create with question text and answers",
-                                        'update'=>"Yes, display it, update with question text and answers",
-                                        "show"=>"Yes, display it",
+                                        'create'=>"Yes, display it",
+                                        'update'=>"Yes, display it",
+                                        "show"=>"Yes, display it, but don’t update",
                                     ),
                                 ),
                             ),
@@ -130,10 +131,9 @@ class kceDelphi extends PluginBase {
 
     public function beforeSurveyPage()
     {
-        $assetJsUrl = Yii::app()->assetManager->publish(dirname(__FILE__) . '/assets/publickcedelphi.js');
-        $assetCssUrl = Yii::app()->assetManager->publish(dirname(__FILE__) . '/assets/publickcedelphi.css');
-        Yii::app()->clientScript->registerScriptFile($assetJsUrl,CClientScript::POS_END);
-        Yii::app()->clientScript->registerCssFile($assetCssUrl);
+        $assetUrl = Yii::app()->assetManager->publish(dirname(__FILE__) . '/assets');
+        Yii::app()->clientScript->registerScriptFile("{$assetUrl}/publickcedelphi.js",CClientScript::POS_END);
+        Yii::app()->clientScript->registerCssFile("{$assetUrl}/publickcedelphi.css");
     }
     public function beforeSurveySettings()
     {
@@ -180,6 +180,16 @@ class kceDelphi extends PluginBase {
                 );
             }
 
+            // Default history 
+            $aSettings["updatequestion"]=array(
+                'type'=>'select',
+                'label'=>"Update and create history question by default.",
+                'options' => array(
+                  'Y'=>gt("Yes"),
+                  'N'=>gt("No"),
+                  ),
+                'current' => $this->get("updatequestion", 'Survey', $oEvent->get('survey'),"Y"),
+            );
             // Did we have an old survey ?
             $aTables = App()->getApi()->getOldResponseTables($iSurveyId);
             if(count($aTables)>0)
@@ -395,6 +405,7 @@ class kceDelphi extends PluginBase {
     {
         if(Yii::app()->request->getPost('confirm'))
         {
+            $this->bUpdateHistory=($this->get("updatequestion", 'Survey', $this->iSurveyId,"Y")=="Y");
             $sTableName=$this->sTableName=Yii::app()->request->getPost('oldsurveytable');
             $aTables = App()->getApi()->getOldResponseTables($this->iSurveyId);
             if(!in_array($sTableName,$aTables)){
@@ -1419,15 +1430,23 @@ class kceDelphi extends PluginBase {
                 if(QuestionAttribute::model()->find("qid=:qid AND attribute='hidden'",array(":qid"=>$oQuestionResult->qid)))
                     $aQuestionsSettings["q[{$iQid}][{$sType}][select]"]['current']='hide';
                 else
-                    $aQuestionsSettings["q[{$iQid}][{$sType}][select]"]['current']='show';
+                {
+                    if($sType=="hist" && $this->bUpdateHistory)
+                      $aQuestionsSettings["q[{$iQid}][{$sType}][select]"]['current']='update';
+                    else
+                      $aQuestionsSettings["q[{$iQid}][{$sType}][select]"]['current']='show';
+                }
+
             }
             else
             {
                 unset($aOptions['hide']);
                 unset($aOptions['update']);
                 unset($aOptions['show']);
-                $aQuestionsSettings["q[{$iQid}][{$sType}][select]"]['current']='none';
-
+                if($sType=="hist" && $this->bUpdateHistory)
+                  $aQuestionsSettings["q[{$iQid}][{$sType}][select]"]['current']='create';
+                else
+                  $aQuestionsSettings["q[{$iQid}][{$sType}][select]"]['current']='none';
             }
             if(count($aOptions))
                 $aQuestionsSettings["q[{$iQid}][{$sType}][select]"]['options']=$aOptions;
@@ -1521,11 +1540,11 @@ class kceDelphi extends PluginBase {
                 'type'=>"select",
                 'label'=>$sLabel,
                 'options'=>array(
-                    'none'=>'Do not display the previous comments (don’t exist)',
-                    'hide'=>'Do not display the previous comments',
-                    'create'=>"Display and create previous comments (create with the new comment list)",
-                    'update'=>"Display and update previous comments",
-                    "show"=>"Display the previous comments",
+                    'none'=>'No, do not display it',
+                    'hide'=>'No, do not display it',
+                    'create'=>"Yes, display it",
+                    'update'=>"Yes, display it",
+                    "show"=>"Yes, display it (but don’t update)",
                 ),
             );
             if($oHistoryQuestion)
@@ -1534,14 +1553,22 @@ class kceDelphi extends PluginBase {
                 $oAttributeHidden=QuestionAttribute::model()->find("qid=:qid AND attribute='hidden'",array(":qid"=>$oHistoryQuestion->qid));
                 unset($aSettings['options']['none']);
                 unset($aSettings['options']['create']);
-                $aSettings['current']=($oAttributeHidden && $oAttributeHidden->value) ? 'hide' : 'show';
+                if($oAttributeHidden && $oAttributeHidden->value && $oldAnswerText)
+                  $aSettings['current']= 'hide';
+                elseif($this->bUpdateHistory)
+                  $aSettings['current']= 'update';
+                else
+                  $aSettings['current']= 'show';
             }
             else
             {
                 unset($aSettings['options']['hide']);
                 unset($aSettings['options']['update']);
                 unset($aSettings['options']['show']);
-                $aSettings['current']='none';
+                if($this->bUpdateHistory && $oldAnswerText)
+                  $aSettings['current']='create';
+                else
+                  $aSettings['current']='none';
             }
             $aQuestionsSettings["commhist[{$oQuestion->qid}]"]=$aSettings;
         }

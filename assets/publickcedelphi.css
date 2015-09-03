@@ -81,6 +81,7 @@ padding:0.4em !important;
 .kce-table thead th,.kce-table tbody td {
 text-align:right !important;
 }
+.kce-accordion.ui-widget-content{background-image:none}
 /*
 .kce-title{
 position:relative;
