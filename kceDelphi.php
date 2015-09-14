@@ -7,7 +7,7 @@
  * @copyright 2014-2015 Denis Chenu <http://sondages.pro>
  * @copyright 2014-2015 Belgian Health Care Knowledge Centre (KCE) <http://kce.fgov.be>
  * @license GPL v3
- * @version 3.4.0
+ * @version 3.5.0
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -156,7 +156,7 @@ class kceDelphi extends PluginBase {
                 $aSettings["historytext_{$sLang}"]=array(
                     'type'=>'string',
                     'label'=>"Sentence added before old proposal history ({$sLang})",
-                    'class' => 'large',
+                    'class' => 'large delphiinput',
                     'current' => $this->get("historytext_{$sLang}", 'Survey', $oEvent->get('survey'),$this->get('historytext',null,null,$this->settings['historytext']['default'])),
                 );
             }
@@ -165,7 +165,7 @@ class kceDelphi extends PluginBase {
                 $aSettings["commenttext_{$sLang}"]=array(
                     'type'=>'string',
                     'label'=>"Sentence for the comments question show if user choose a answer with value less than 0 ({$sLang})",
-                    'class' => 'large',
+                    'class' => 'large delphiinput',
                     'current' => $this->get("commenttext_{$sLang}", 'Survey', $oEvent->get('survey'),$this->get('commenttext',null,null,$this->settings['commenttext']['default'])),
                 );
             }
@@ -175,7 +175,7 @@ class kceDelphi extends PluginBase {
                 $aSettings["commenthist_{$sLang}"]=array(
                     'type'=>'string',
                     'label'=>"Sentence added before comment list ({$sLang})",
-                    'class' => 'large',
+                    'class' => 'large delphiinput',
                     'current' => $this->get("commenthist_{$sLang}", 'Survey', $oEvent->get('survey'),$this->get('commenthist',null,null,$this->settings['commenthist']['default'])),
                 );
             }
@@ -184,6 +184,7 @@ class kceDelphi extends PluginBase {
             $aSettings["updatequestion"]=array(
                 'type'=>'select',
                 'label'=>"Update and create history question by default.",
+                'class'=>' delphiinput',
                 'options' => array(
                   'Y'=>gt("Yes"),
                   'N'=>gt("No"),
@@ -199,7 +200,7 @@ class kceDelphi extends PluginBase {
                     'link'=>$this->api->createUrl('plugins/direct', array('plugin' => 'kceDelphi','surveyid'=>$iSurveyId, 'function' => 'view')),
                     'label'=>'Update the survey according to an old answer table',
                     'help'=>'Attention, you lost actual settings',
-                    'class'=>array('btn-link'),
+                    'class'=>array('btn-link','delphi-link'),
                 );
             }
             else
@@ -209,7 +210,7 @@ class kceDelphi extends PluginBase {
                     'link'=>$this->api->createUrl('plugins/direct', array('plugin' => 'kceDelphi','surveyid'=>$iSurveyId, 'function' => 'check')),
                     'label'=>'Update the survey to add needed question',
                     'help'=>'Attention, you lost actual settings',
-                    'class'=>array('btn-link'),
+                    'class'=>array('btn-link','delphi-link'),
                 );
             }
 
@@ -227,6 +228,7 @@ class kceDelphi extends PluginBase {
         }
         $assetUrl = Yii::app()->assetManager->publish(dirname(__FILE__) . '/assets');
         Yii::app()->clientScript->registerScriptFile($assetUrl . '/fixfloat.js',CClientScript::POS_END);
+        Yii::app()->clientScript->registerScriptFile($assetUrl . '/kcedelphi.js',CClientScript::POS_END);
         Yii::app()->clientScript->registerCssFile($assetUrl . '/kcedelphi.css');
         Yii::app()->clientScript->registerCssFile($assetUrl . '/settingsfix.css');
     }
@@ -945,7 +947,9 @@ class kceDelphi extends PluginBase {
                             foreach($aLangs as $sLang)
                             {
                                 $newQuestionText = "<div class='kce-accordion'>";
-                                $newQuestionText .= "<p class='kce-title comment-title'>".$this->get("commentalthist_{$sLang}", 'Survey', $this->iSurveyId,$this->get('commentalthist',null,null,$this->settings['commentalthist']['default']))."</p><div class='kce-content'>".$baseQuestionText."</div></div>";
+                                $newQuestionText .= "<p class='kce-title comment-title'>".$this->get("commentalthist_{$sLang}", 'Survey', $this->iSurveyId,$this->get('commentalthist',null,null,$this->settings['commentalthist']['default']))."</p>";
+                                $newQuestionText .= "<div class='kce-content'>".$baseQuestionText."</div>";
+                                $newQuestionText .= "</div>";
                                 Question::model()->updateAll(array('question'=>$newQuestionText),"sid=:sid AND title=:title AND language=:language",array(":sid"=>$this->iSurveyId,":title"=>$oQuestionBase->title.$sType,":language"=>$sLang));
                             }
                             $this->addResult("{$oQuestionBase->title}{$sType} question text updated with list of answer",'success');
@@ -1041,7 +1045,7 @@ class kceDelphi extends PluginBase {
                             {
                                 $oQuestionCommentLang=Question::model()->find("sid=:sid AND language=:language AND qid=:qid",array(":sid"=>$this->iSurveyId,":language"=>$sLang,":qid"=>$oQuestionBase->qid));
                                 if($oQuestionCommentLang)
-                                    $newQuestionHelp="<div class='kce-content'><div class='kce-question-comment'>".$oQuestionCommentLang->question."</div>".$baseQuestionText."</div>";
+                                    $newQuestionHelp="<div class='kce-content'><div class='kce-question-comment'>".$oQuestionCommentLang->question."</div>".$baseQuestionText."</div></div>";
                                 else
                                     $newQuestionHelp="<div class='kce-content'>".$baseQuestionText."</div>";
                                 Question::model()->updateAll(array('help'=>$newQuestionHelp),"sid=:sid AND qid=:qid AND language=:language",array(":sid"=>$this->iSurveyId,":qid"=>$oQuestion->qid,":language"=>$sLang));
