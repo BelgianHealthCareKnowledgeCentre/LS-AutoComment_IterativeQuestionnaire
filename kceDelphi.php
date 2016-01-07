@@ -7,24 +7,24 @@
  * @copyright 2014-2015 Denis Chenu <http://sondages.pro>
  * @copyright 2014-2015 Belgian Health Care Knowledge Centre (KCE) <http://kce.fgov.be>
  * @license GPL v3
- * @version 3.5.0
+ * @version 3.5.1
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  */
-class kceDelphi extends PluginBase { 
+class kceDelphi extends PluginBase {
 
     protected $storage = 'DbStorage';
     static protected $name = 'Delphi for KCE';
-    static protected $description = 'Activate the Delphi method for Delphi - v3.3.0';
+    static protected $description = 'Activate the Delphi method for Delphi - v3.5.1';
 
     private $iSurveyId=false;
     private $bSurveyActivated=false;
@@ -140,8 +140,8 @@ class kceDelphi extends PluginBase {
         $oEvent = $this->event;
         $iSurveyId=$oEvent->get('survey');
         $oSurvey=Survey::model()->findByPk($iSurveyId);
-        if( 
-          $oSurvey && $oSurvey->assessments=='Y' 
+        if(
+          $oSurvey && $oSurvey->assessments=='Y'
           && Permission::model()->hasSurveyPermission($iSurveyId, 'surveycontent', 'update')
         )
         {
@@ -180,7 +180,7 @@ class kceDelphi extends PluginBase {
                 );
             }
 
-            // Default history 
+            // Default history
             $aSettings["updatequestion"]=array(
                 'type'=>'select',
                 'label'=>"Update and create history question by default.",
@@ -289,7 +289,7 @@ class kceDelphi extends PluginBase {
     }
     public function actionCheck()
     {
-    
+
         $oRequest = $this->api->getRequest();
 
         if($oRequest->getPost('cancel'))
@@ -345,13 +345,13 @@ class kceDelphi extends PluginBase {
         }
         $aData['aSettings']=$aQuestionsSettings;
         $aData['aResult']=$this->aResult;
-     
+
         $aData['updateUrl']=$this->api->createUrl('plugins/direct', array('plugin' => 'kceDelphi','surveyid'=>$this->iSurveyId, 'function' => 'check'));
         $this->displayContent($aData,array("validate"));
     }
     /**
     * Show the form
-    * 
+    *
     **/
     public function actionView()
     {
@@ -405,7 +405,7 @@ class kceDelphi extends PluginBase {
     }
     /**
     * Validate survey before updating
-    * 
+    *
     **/
     public function actionValidate()
     {
@@ -440,7 +440,7 @@ class kceDelphi extends PluginBase {
                 }
                 else
                 {
-                    
+
                 }
             }
             $aSurveySettings['oldsurveytable']=array(
@@ -467,7 +467,7 @@ class kceDelphi extends PluginBase {
     }
     /**
     * Update survey with old survey
-    * 
+    *
     **/
     public function actionUpdate()
     {
@@ -519,7 +519,7 @@ class kceDelphi extends PluginBase {
                             }
                         }
                     }
-                    
+
                 }
                 elseif($oQuestion && $bHidden && $sValue=='show')
                 {
@@ -826,7 +826,7 @@ class kceDelphi extends PluginBase {
         $iGid=$oQuestionBase->gid;
         $aDelphiKeys=array_keys($this->aDelphiCodes);
         $aDelphiCodes=$this->aDelphiCodes;
-        
+
         if($sAction=='create' || $sAction=='createupdate')
         {
             //Existing question
@@ -897,7 +897,7 @@ class kceDelphi extends PluginBase {
                                 $newQuestionHelp .= "<hr />";
                                 $newQuestionHelp .= $oldAnswerTable;
                             }
-                            $newQuestionHelp = "<div class='kce-content'>".$newQuestionHelp."<div>";
+                            $newQuestionHelp = "<div class='kce-content'>".$newQuestionHelp."</div>";
                             Question::model()->updateAll(array('help'=>$newQuestionHelp),"sid=:sid AND title=:title AND language=:language",array(":sid"=>$this->iSurveyId,":title"=>$oQuestionBase->title.$sType,":language"=>$sLang));
                         }else{
                             $this->addResult("Unable to find $iQid to update history for language $sLang.",'error');
@@ -1045,7 +1045,7 @@ class kceDelphi extends PluginBase {
                             {
                                 $oQuestionCommentLang=Question::model()->find("sid=:sid AND language=:language AND qid=:qid",array(":sid"=>$this->iSurveyId,":language"=>$sLang,":qid"=>$oQuestionBase->qid));
                                 if($oQuestionCommentLang)
-                                    $newQuestionHelp="<div class='kce-content'><div class='kce-question-comment'>".$oQuestionCommentLang->question."</div>".$baseQuestionText."</div></div>";
+                                    $newQuestionHelp="<div class='kce-content'><div class='kce-question-comment'>".$oQuestionCommentLang->question."</div>".$baseQuestionText."</div>";
                                 else
                                     $newQuestionHelp="<div class='kce-content'>".$baseQuestionText."</div>";
                                 Question::model()->updateAll(array('help'=>$newQuestionHelp),"sid=:sid AND qid=:qid AND language=:language",array(":sid"=>$this->iSurveyId,":qid"=>$oQuestion->qid,":language"=>$sLang));
@@ -1122,7 +1122,7 @@ class kceDelphi extends PluginBase {
         $oQuestion->preg = '';
         $oQuestion->other = 'N';
         $oQuestion->mandatory = 'N';
-        
+
         $oQuestion->type=$sNewQuestionType;
         $oQuestion->question_order = $iOrder;
         $oSurvey=Survey::model()->findByPk($this->iSurveyId);
@@ -1348,7 +1348,7 @@ class kceDelphi extends PluginBase {
 
                     //~ $aHtmlListQuestion.="<dt title='".str_replace("'",'’',FlattenText($aOldAnswer['answer']))."'>{$sCode} : <small>".ellipsize(FlattenText($aOldAnswer['answer']),60)."</small></dt>"
                                     //~ ."<dd>".$aOldAnswer['count']." : ";
-//~ 
+//~
                     //~ if($iTotal>0)
                     //~ {
                         //~ $aHtmlListQuestion.=number_format($aOldAnswer['count']/$iTotal*100)."%";
@@ -1403,7 +1403,7 @@ class kceDelphi extends PluginBase {
         if(isset($this->aDelphiCodes[$sType]['select']))
         {
             $sLabel="<span class='label'>{$sCode}{$sType}</span>".$this->aDelphiCodes[$sType]['select']['label'];
-            // Add list of comment 
+            // Add list of comment
             if($sType=="comh")
             {
                 // Find the old comm value
@@ -1483,7 +1483,7 @@ class kceDelphi extends PluginBase {
                 if(isset($aDelphiCodes[$sType]['need']))
                 {
                     $oQuestionExist=Question::model()->find("sid=:sid AND language=:language AND title=:title",array(":sid"=>$this->iSurveyId,":language"=>$this->sLanguage,":title"=>"{$sCode}{$aDelphiCodes[$sType]['need']}"));
-                    
+
                     $bCurrent=$this->aDelphiCodes[$sType]['createupdate'] && (bool)$oQuestionExist;
                 }
                 $aQuestionsSettings["q[{$iQid}][{$sType}][createupdate]"]['type']='checkbox';
@@ -1517,7 +1517,7 @@ class kceDelphi extends PluginBase {
             );
             $aQuestionsSettings["validate[{$oQuestion->qid}]"]['current']=($oAttributeHidden && $oAttributeHidden->value) ? 'hide' : 'show';
             // Adding history question
-            
+
         }
         if($aQuestionsInfo[$oQuestion->qid]['oldField']=$this->getOldField($oldSchema,$oQuestion->qid))
         {
@@ -1534,7 +1534,7 @@ class kceDelphi extends PluginBase {
                 $sLabel="<span class='label'>{$oQuestion->title}h</span> <div class='kcetitle'>$oldAnswerText</div><span class='label label-inverse' data-kcetitle='true'>See</span> comments from the previous round (automatic)";
                 //$sLabel="<span class='label'>{$oQuestion->title}h</span>comments from the previous round (automatic)";
                 //$sLabel.="<div class='old-answers-list'>".$oldAnswerText."</div>";
-            
+
             }
             else
             {
