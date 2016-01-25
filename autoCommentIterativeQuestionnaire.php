@@ -1,13 +1,13 @@
 <?php
 /**
- * kceDelphi Plugin for LimeSurvey
- * A simplified Delphi method for KCE
+ * autoCommentIterativeQuestionnaire Plugin for LimeSurvey
+ * Creates automatic comment questions, and for iterative quesitonnaires, create a new questionnaire from a previous round questionnaire
  *
  * @author Denis Chenu <denis@sondages.pro>
  * @copyright 2014-2015 Denis Chenu <http://sondages.pro>
  * @copyright 2014-2015 Belgian Health Care Knowledge Centre (KCE) <http://kce.fgov.be>
- * @license GPL v3
- * @version 3.5.2
+ * @license AGPL v3
+ * @version 1.0
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,11 +20,11 @@
  * GNU General Public License for more details.
  *
  */
-class kceDelphi extends PluginBase {
+class autoCommentIterativeQuestionnaire extends PluginBase {
 
     protected $storage = 'DbStorage';
-    static protected $name = 'Delphi for KCE';
-    static protected $description = 'Activate the Delphi method for Delphi - v3.5.2';
+    static protected $name = 'autoCommentIterativeQuestionnaire';
+    static protected $description = 'Creates automatic comment questions, and for iterative quesitonnaires, create a new questionnaire from a previous round questionnaire - v1.0';
 
     private $iSurveyId=false;
     private $bSurveyActivated=false;
@@ -197,7 +197,7 @@ class kceDelphi extends PluginBase {
             {
                 $aSettings['launch']=array(
                     'type'=>'link',
-                    'link'=>$this->api->createUrl('plugins/direct', array('plugin' => 'kceDelphi','surveyid'=>$iSurveyId, 'function' => 'view')),
+                    'link'=>$this->api->createUrl('plugins/direct', array('plugin' => 'autoCommentIterativeQuestionnaire','surveyid'=>$iSurveyId, 'function' => 'view')),
                     'label'=>'Update the survey according to an old answer table',
                     'help'=>'Attention, you lost actual settings',
                     'class'=>array('btn-link','delphi-link'),
@@ -207,7 +207,7 @@ class kceDelphi extends PluginBase {
             {
                 $aSettings['check']=array(
                     'type'=>'link',
-                    'link'=>$this->api->createUrl('plugins/direct', array('plugin' => 'kceDelphi','surveyid'=>$iSurveyId, 'function' => 'check')),
+                    'link'=>$this->api->createUrl('plugins/direct', array('plugin' => 'autoCommentIterativeQuestionnaire','surveyid'=>$iSurveyId, 'function' => 'check')),
                     'label'=>'Update the survey to add needed question',
                     'help'=>'Attention, you lost actual settings',
                     'class'=>array('btn-link','delphi-link'),
@@ -248,7 +248,7 @@ class kceDelphi extends PluginBase {
         $oEvent = $this->event;
         $sAction=$oEvent->get('function');
 
-        if ($oEvent->get('target') != "kceDelphi")
+        if ($oEvent->get('target') != "autoCommentIterativeQuestionnaire")
             return;
 
         $this->iSurveyId=Yii::app()->request->getParam('surveyid');
@@ -346,7 +346,7 @@ class kceDelphi extends PluginBase {
         $aData['aSettings']=$aQuestionsSettings;
         $aData['aResult']=$this->aResult;
 
-        $aData['updateUrl']=$this->api->createUrl('plugins/direct', array('plugin' => 'kceDelphi','surveyid'=>$this->iSurveyId, 'function' => 'check'));
+        $aData['updateUrl']=$this->api->createUrl('plugins/direct', array('plugin' => 'autoCommentIterativeQuestionnaire','surveyid'=>$this->iSurveyId, 'function' => 'check'));
         $this->displayContent($aData,array("validate"));
     }
     /**
@@ -400,7 +400,7 @@ class kceDelphi extends PluginBase {
                 ),
             );
         }
-        $aData['updateUrl']=$this->api->createUrl('plugins/direct', array('plugin' => 'kceDelphi','surveyid'=>$this->iSurveyId, 'function' => 'validate'));
+        $aData['updateUrl']=$this->api->createUrl('plugins/direct', array('plugin' => 'autoCommentIterativeQuestionnaire','surveyid'=>$this->iSurveyId, 'function' => 'validate'));
         $this->displayContent($aData,array("select"));
     }
     /**
@@ -416,7 +416,7 @@ class kceDelphi extends PluginBase {
             $aTables = App()->getApi()->getOldResponseTables($this->iSurveyId);
             if(!in_array($sTableName,$aTables)){
                 Yii::app()->setFlashMessage("Bad table name.",'error');
-                App()->controller->redirect($this->api->createUrl('plugins/direct', array('plugin' => 'kceDelphi','surveyid'=>$this->iSurveyId, 'function' => 'view')));
+                App()->controller->redirect($this->api->createUrl('plugins/direct', array('plugin' => 'autoCommentIterativeQuestionnaire','surveyid'=>$this->iSurveyId, 'function' => 'view')));
             }
             if(Yii::app()->request->getPost('validate'))
                 $this->actionUpdate();
@@ -456,7 +456,7 @@ class kceDelphi extends PluginBase {
                 'current' => App()->request->getPost('withuncompleted'),
             );
             $aData['aSettings']=array_merge($aQuestionsSettings,$aSurveySettings);
-            $aData['updateUrl']=$this->api->createUrl('plugins/direct', array('plugin' => 'kceDelphi','surveyid'=>$this->iSurveyId, 'function' => 'validate'));
+            $aData['updateUrl']=$this->api->createUrl('plugins/direct', array('plugin' => 'autoCommentIterativeQuestionnaire','surveyid'=>$this->iSurveyId, 'function' => 'validate'));
             LimeExpressionManager::SetDirtyFlag();
             $this->displayContent($aData,array("validate"));
         }
@@ -485,7 +485,7 @@ class kceDelphi extends PluginBase {
                 $aTables = App()->getApi()->getOldResponseTables($this->iSurveyId);
                 if(!in_array($sTableName,$aTables)){
                     Yii::app()->setFlashMessage("Bad table name.",'error');
-                    App()->controller->redirect($this->api->createUrl('plugins/direct', array('plugin' => 'kceDelphi','surveyid'=>$this->iSurveyId, 'function' => 'view')));
+                    App()->controller->redirect($this->api->createUrl('plugins/direct', array('plugin' => 'autoCommentIterativeQuestionnaire','surveyid'=>$this->iSurveyId, 'function' => 'view')));
                 }
 
                 $oldTable = PluginDynamic::model($sTableName);
@@ -571,9 +571,6 @@ class kceDelphi extends PluginBase {
         Yii::app()->clientScript->registerScriptFile($assetUrl . '/kcedelphi.js',CClientScript::POS_END);
         Yii::app()->clientScript->registerCssFile($assetUrl . '/kcedelphi.css');
         Yii::app()->clientScript->registerCssFile($assetUrl . '/settingsfix.css');
-        // When debugging or adapt javascript
-        //Yii::app()->getClientScript()->registerScriptFile(Yii::app()->getConfig('publicurl')."plugins/kceDelphi/assets/kcedelphi.js",CClientScript::POS_END);
-        //Yii::app()->getClientScript()->registerScriptFile(Yii::app()->getConfig('publicurl')."plugins/kceDelphi/assets/kcedelphi.css");
         $oAdminController->_getAdminHeader();
         $oAdminController->_showadminmenu($this->iSurveyId);
         if($this->iSurveyId)
