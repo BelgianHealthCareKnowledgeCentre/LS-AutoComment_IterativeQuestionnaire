@@ -7,7 +7,7 @@
  * @copyright 2014-2015 Denis Chenu <http://sondages.pro>
  * @copyright 2014-2015 Belgian Health Care Knowledge Centre (KCE) <http://kce.fgov.be>
  * @license GPL v3
- * @version 3.5.1
+ * @version 3.5.2
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,7 +24,7 @@ class kceDelphi extends PluginBase {
 
     protected $storage = 'DbStorage';
     static protected $name = 'Delphi for KCE';
-    static protected $description = 'Activate the Delphi method for Delphi - v3.5.1';
+    static protected $description = 'Activate the Delphi method for Delphi - v3.5.2';
 
     private $iSurveyId=false;
     private $bSurveyActivated=false;
