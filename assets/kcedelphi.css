@@ -1,0 +1,104 @@
+.clearfix { *zoom:1; }
+.clearfix:before, .clearfix:after {
+    display:table;
+    content:"";
+    line-height:0;
+}
+.clearfix:after { clear:both; }
+a.kcebtn:link,a.kcebtn:visited {
+    text-decoration: underline;
+}
+a.kcebtn:hover {
+    text-decoration: none;
+    background:#CCC;
+}
+
+.settingswidget .setting > .questiontitle,
+.questiontitle
+{
+display:block;
+border-top: 1px solid #999;
+}
+.settingswidget .setting > .oldresult,
+.oldresult
+{
+display:block;
+}
+.settingswidget .setting > .oldresult table{display:table}
+.setting dl
+{
+width: 100%;
+margin: 0 1em;
+padding: 0;
+}
+table.kce-table{
+display:table;
+
+}
+table.kce-table thead th{
+text-align:center;
+}
+table.kce-table tbody th{
+text-align:right;min-width:15em;
+}
+table.kce-table tbody td{
+text-align:center;min-width:4em;
+}
+.setting dl dt
+{
+width: 25em;
+float: left;
+clear:both;
+margin: 0 0 0 0;
+padding: 0;
+font-weight: bold;
+text-align: right;
+}
+.setting dl dt:after { content: ":"; }
+
+.setting dl dd
+{
+float: left;
+width:10em;
+text-align: left;
+/*margin: 0 0 0 15.5em;*/
+padding: 0 0 0.1em 0;
+}
+.btn.btn-link{
+color: #0088cc;text-decoration:underline;
+}
+.modal-lg .modal-body
+{
+   height:100%;
+}
+
+.modal-lg 
+{
+   height:80%;
+   width:70%;
+   margin-left: -35%; 
+}
+@media (max-width: 768px) {
+   .modal-lg 
+   {
+    width:90%;
+        margin-left: 2%; 
+   }
+}
+
+.kcetitle{display:none}
+
+.kce-table th, .kce-table td {
+    padding: 2px;
+}
+.old-answers-list .kce-answerstext{
+    list-style: square inside none;font-size:0.9em;
+}
+.old-answers-list .kce-answerstext li{
+    list-style: square inside none;line-height:1.3;padding:0;
+}
+.ui-tooltip.kce-tooltip{
+    max-height: 12em;
+    max-width: 30em;
+    overflow: auto;
+}
