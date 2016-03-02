@@ -4,10 +4,10 @@
  * Creates automatic comment questions, and for iterative quesitonnaires, create a new questionnaire from a previous round questionnaire
  *
  * @author Denis Chenu <denis@sondages.pro>
- * @copyright 2014-2015 Denis Chenu <http://sondages.pro>
- * @copyright 2014-2015 Belgian Health Care Knowledge Centre (KCE) <http://kce.fgov.be>
+ * @copyright 2014-2016 Denis Chenu <http://sondages.pro>
+ * @copyright 2014-2016 Belgian Health Care Knowledge Centre (KCE) <http://kce.fgov.be>
  * @license AGPL v3
- * @version 1.0
+ * @version 1.1
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,7 +24,7 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
 
     protected $storage = 'DbStorage';
     static protected $name = 'autoCommentIterativeQuestionnaire';
-    static protected $description = 'Creates automatic comment questions, and for iterative quesitonnaires, create a new questionnaire from a previous round questionnaire - v1.0';
+    static protected $description = 'Creates automatic comment questions, and for iterative quesitonnaires, create a new questionnaire from a previous round questionnaire - v1.1';
 
     private $iSurveyId=false;
     private $bSurveyActivated=false;
@@ -283,7 +283,7 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
         $oSurvey=Survey::model()->findByPk($this->iSurveyId);
         $aOtherLanguage=explode(" ",$oSurvey->additional_languages);
         if(in_array(App()->session['adminlang'],$aOtherLanguage))
-            $this->sLanguage=Yii::app()->lang->langcode;
+            $this->sLanguage=App()->session['adminlang'];
         else
             $this->sLanguage=$oSurvey->language;
     }
@@ -382,7 +382,11 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
             );
             $aData['buttons'] = array(
                 gT('Validate question before import') => array(
-                    'name' => 'confirm'
+                    'name' => 'confirm',
+                    'type'=> 'submit',
+                    'htmlOptions'=>array(
+                        'value'=>'confirm',
+                    ),
                 ),
                 gT('Cancel') => array(
                     'name' => 'cancel'
@@ -448,7 +452,9 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
                 'type' => 'select',
                 'options' => array($sTableName=>$sTableName),
                 'current' => $sTableName,
-                'class'=>'hidden'
+                'htmlOptions'=>array(
+                    'readonly'=>true,
+                ),
             );
             $aSurveySettings['withuncompleted'] = array(
                 'label' => gT('Not completed'),
@@ -561,10 +567,10 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
         $oAdminController=new AdminController('admin');
         $oCommonAction = new Survey_Common_Action($oAdminController,'survey');
 
-        $aData['clang'] = $clang = Yii::app()->lang;
         $aData['sImageURL'] = Yii::app()->getConfig('adminimageurl');
         $aData['aResult']=$this->aResult;
 
+        /* Mimic 2.06 system : must fix */
         ob_start();
         header("Content-type: text/html; charset=UTF-8"); // needed for correct UTF-8 encoding
         $assetUrl = Yii::app()->assetManager->publish(dirname(__FILE__) . '/assets');
@@ -580,7 +586,7 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
             $oAdminController->renderPartial("views.{$view}",$aData);
         }
         $oAdminController->_loadEndScripts();
-        $oAdminController->_getAdminFooter('http://manual.limesurvey.org', $clang->gT('LimeSurvey online manual'));
+        $oAdminController->_getAdminFooter('http://manual.limesurvey.org', gT('LimeSurvey online manual'));
         $sOutput = ob_get_contents();
         ob_clean();
         App()->getClientScript()->render($sOutput);
@@ -662,7 +668,7 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
     {
         $sOldLanguage=App()->session['adminlang'];
         App()->setLanguage($sLang);
-        $clang=new Limesurvey_lang($sLang,true);
+
         $this->sLanguage=$sLang;
         $htmlOldAnswersTable="";
         $oldSchema=$this->oldSchema;
@@ -678,7 +684,7 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
             if($iTotalValue>0)
             {
                 $htmlOldAnswersTable = "<table class='kce-table'><thead><tr><td></td>";
-                $htmlOldAnswersTable.= CHtml::tag('th',array(),$clang->gt('Count'));
+                $htmlOldAnswersTable.= CHtml::tag('th',array(),gT('Count'));
                 $htmlOldAnswersTable.= CHtml::tag('th',array(),'%');
                 $htmlOldAnswersTable.= "</tr></thead><tbody>";
                 foreach ($aOldAnswers as $aOldAnswer) {
@@ -693,7 +699,7 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
                     }
                 }
                 $htmlOldAnswersTable.= "<tr>";
-                $htmlOldAnswersTable.= CHtml::tag('th',array(),$clang->gt('Total'));
+                $htmlOldAnswersTable.= CHtml::tag('th',array(),gT('Total'));
                 $htmlOldAnswersTable.= CHtml::tag('td',array(),$iTotalValue);
                 $htmlOldAnswersTable.= CHtml::tag('td',array(),"100%");
                 $htmlOldAnswersTable.= "</tr>";
@@ -703,8 +709,6 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
         App()->setLanguage(App()->session['adminlang']);
 
         $this->setBaseLanguage();
-
-        $clang=new Limesurvey_lang(App()->session['adminlang']);
 
         return $htmlOldAnswersTable;
 

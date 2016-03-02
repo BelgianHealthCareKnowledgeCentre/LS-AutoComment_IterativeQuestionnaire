@@ -4,7 +4,7 @@ Module for Lime Survey - Creates automatic comment questions, and for iterative 
 ## Installation
 
 ### Via GIT
-- Go to your LimeSurvey Directory (version up to 2.05)
+- Go to your LimeSurvey Directory (version up to 2.06)
 - Clone in plugins/autoCommentIterativeQuestionnaire directory
 
 ### Via ZIP dowload
