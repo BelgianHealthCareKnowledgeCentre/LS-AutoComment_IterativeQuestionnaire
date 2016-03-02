@@ -1,5 +1,5 @@
 <div class='ui-widget ui-widget-content ui-corner-all'>
-    <div class='header ui-widget-header'><?php $clang->eT("Result");?></div>
+    <div class='header ui-widget-header'><?php eT("Result");?></div>
     <div class='ui-widget ui-widget-content ui-corner-all row-fluid'>
     <div class="span8 offset2 ">
         <?php if(count($aResult['success'])){ ?>
@@ -25,4 +25,4 @@
         <?php } ?>
     </div>
     </div>
-</div> 
+</div>
