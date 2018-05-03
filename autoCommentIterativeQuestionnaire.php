@@ -7,7 +7,7 @@
  * @copyright 2014-2018 Denis Chenu <http://sondages.pro>
  * @copyright 2014-2018 Belgian Health Care Knowledge Centre (KCE) <http://kce.fgov.be>
  * @license AGPL v3
- * @version 3.0
+ * @version 3.0.1
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -214,7 +214,7 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
             $method = 'actionCheck';
         }
         $aMenuItem = array(
-            'label' => $this->_translate('Iteration'),
+            'label' => $this->gT('Iteration'),
             'iconClass' => 'fa fa-refresh',
             'href' => Yii::app()->createUrl(
                 'admin/pluginhelper',
@@ -557,7 +557,6 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
             );
             $aData['updateUrl']=$this->api->createUrl('admin/pluginhelper', array('sa'=>'sidebody','plugin' => get_class($this), 'method' => 'actionValidate','surveyId'=>$this->iSurveyId));
             LimeExpressionManager::SetDirtyFlag();
-            //~ tracevar($aData);
             return $this->_renderPartial($aData,array("validate"));
         }
         else
@@ -986,7 +985,6 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
                             Question::model()->updateAll(array('help'=>$newQuestionHelp),"sid=:sid AND title=:title AND language=:language",array(":sid"=>$this->iSurveyId,":title"=>$oQuestionBase->title.$sType,":language"=>$sLang));
                             $oQuestionDelphi = Question::model()->find('sid=:sid AND title=:title',array(":sid"=>$this->iSurveyId,":title"=>$oQuestionBase->title.$sType));
                             if($oQuestion) {
-                                tracevar([$oQuestionBase->title.$sType,$oQuestionDelphi->qid]);
                                 $this->setQuestionDelphi($oQuestionDelphi->qid);
                                 $this->addResult("{$oQuestionBase->title}{$sType} (".join(",",$aLangs)." question help updated with list of answer",'success');
                             } else {
@@ -1017,7 +1015,6 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
                             }
                             $oQuestionDelphi = Question::model()->find('sid=:sid AND title=:title',array(":sid"=>$this->iSurveyId,":title"=>$oQuestionBase->title.$sType));
                             if($oQuestion) {
-                                tracevar([$oQuestionBase->title.$sType,$oQuestionDelphi->qid]);
                                 $this->setQuestionDelphi($oQuestionDelphi->qid);
                                 $this->addResult("{$oQuestionBase->title}{$sType} (".join(",",$aLangs)." question help updated with list of answer",'success');
                             } else {
@@ -1054,7 +1051,6 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
                             }
                             $oQuestionDelphi = Question::model()->find('sid=:sid AND title=:title',array(":sid"=>$this->iSurveyId,":title"=>$oQuestionBase->title.$sType));
                             if($oQuestion) {
-                                tracevar([$oQuestionBase->title.$sType,$oQuestionDelphi->qid]);
                                 $this->setQuestionDelphi($oQuestionDelphi->qid);
                                 $this->addResult("{$oQuestionBase->title}{$sType} (".join(",",$aLangs)." question help updated with list of answer",'success');
                             } else {
@@ -1280,8 +1276,9 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
                 $oLangQuestion->type = $oQuestion->type;
                 $oLangQuestion->question_order = $iOrder;
                 $oLangQuestion->language = $sLang;
-                if(!$oLangQuestion->save())
-                    tracevar($oLangQuestion->getErrors());
+                if(!$oLangQuestion->save()) {
+                    $this->log(\CVarDumper::dumpAsString($oLangQuestion->getErrors()),'error');
+                }
             }
 
             $this->addResult("Created question {$sCode}{$sType}.",'success');
@@ -1312,7 +1309,6 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
     private function setQuestionDelphi($iQid)
     {
         $oQuestion=Question::model()->find("sid=:sid AND qid=:qid",array(":sid"=>$this->iSurveyId,":qid"=>$iQid));
-        tracevar($iQid);
         if(!$oQuestion) {
             return;
         }
@@ -1728,27 +1724,16 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
     // Manage return $aResult
     private function addResult($sString,$sType='warning',$oTrace=NULL)
     {
-        if(in_array($sType,array('success','warning','error')) && is_string($sString) && $sString)
-        {
+        if(in_array($sType,array('success','warning','error')) && is_string($sString) && $sString) {
             $this->aResult[$sType][]=$sString;
-        }
-        elseif(is_numeric($sType))
-        {
+        } elseif(is_numeric($sType)) {
             $this->aResult['question'][]=$sType;
         }
-        elseif($sType)
-        {
-            tracevar(array($sType,$sString));
+        if($oTrace) {
+            $this->log(\CVarDumper::dumpAsString($oTrace),'info');
         }
-        if($oTrace)
-            tracevar($oTrace);
     }
 
-    private function _translate($string)
-    {
-        // @Todo, currently return string
-        return $string;
-    }
     private function _checkAccess() {
         if(is_null($this->iSurveyId)) {
             return;
