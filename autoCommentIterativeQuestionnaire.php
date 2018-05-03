@@ -20,7 +20,7 @@
  * GNU General Public License for more details.
  *
  */
-class autoCommentIterativeQuestionnaire extends PluginBase {
+class autoCommentIterativeQuestionnaire extends \ls\pluginmanager\PluginBase {
 
     protected $storage = 'DbStorage';
     static protected $name = 'autoCommentIterativeQuestionnaire';
@@ -119,8 +119,7 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
             'default'=>'Previous comments.',
         ),
     );
-    public function __construct(PluginManager $manager, $id) {
-        parent::__construct($manager, $id);
+    public function init() {
         $this->subscribe('beforeSurveySettings');
         $this->subscribe('newSurveySettings');
         //Can call plugin
