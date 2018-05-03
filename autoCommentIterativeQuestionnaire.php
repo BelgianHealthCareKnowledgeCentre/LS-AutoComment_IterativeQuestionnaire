@@ -4,10 +4,10 @@
  * Creates automatic comment questions, and for iterative quesitonnaires, create a new questionnaire from a previous round questionnaire
  *
  * @author Denis Chenu <denis@sondages.pro>
- * @copyright 2014-2016 Denis Chenu <http://sondages.pro>
- * @copyright 2014-2016 Belgian Health Care Knowledge Centre (KCE) <http://kce.fgov.be>
+ * @copyright 2014-2018 Denis Chenu <http://sondages.pro>
+ * @copyright 2014-2018 Belgian Health Care Knowledge Centre (KCE) <http://kce.fgov.be>
  * @license AGPL v3
- * @version 1.1
+ * @version 3.0
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,7 +24,7 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
 
     protected $storage = 'DbStorage';
     static protected $name = 'autoCommentIterativeQuestionnaire';
-    static protected $description = 'Creates automatic comment questions, and for iterative quesitonnaires, create a new questionnaire from a previous round questionnaire - v1.1';
+    static protected $description = 'Creates automatic comment questions, and for iterative quesitonnaires, create a new questionnaire from a previous round questionnaire - v3.0';
 
     private $iSurveyId=false;
     private $bSurveyActivated=false;
@@ -40,35 +40,34 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
     //~ private $validatescore,$scoreforyes,$scoreforno;
 
     private $aDelphiCodes=array(
-                            'hist'=>array(
-                                'questiontype'=>"X",
-                                'select'=>array(
-                                    'label'=>"Display the question (text) from the previous round",
-                                    'options'=>array(
-                                        'none'=>'No, do not display it',
-                                        'hide'=>'No, do not display it',
-                                        'create'=>"Yes, display it",
-                                        'update'=>"Yes, display it",
-                                        "show"=>"Yes, display it, but don’t update",
-                                    ),
-                                ),
-                            ),
-                            'comm'=>array(
-                                'questiontype'=>"T",
-                                'create'=>  false,
-                                'select'=>array(
-                                        'label'=>"Comment question (automatic)",
-                                        'options'=>array(
-                                            'none'=>'No creation of this question',
-                                            'create'=>"Create question with default text (and Show it)",
-                                        ),
-                                    ),
-                                'condition'=>"{QCODE}.valueNAOK< 0",
-                                'hidevalidate'=>false,
-                            ),
-                        );
+        'hist'=>array(
+            'questiontype'=>"X",
+            'select'=>array(
+                'label'=>"Display the question (text) from the previous round",
+                'options'=>array(
+                    'none'=>'No, do not display it',
+                    'hide'=>'No, do not display it',
+                    'create'=>"Yes, display it",
+                    'update'=>"Yes, display it",
+                    "show"=>"Yes, display it, but don’t update",
+                ),
+            ),
+        ),
+        'comm'=>array(
+            'questiontype'=>"T",
+            'create'=>  false,
+            'select'=>array(
+                    'label'=>"Comment question (automatic)",
+                    'options'=>array(
+                        'none'=>'No creation of this question',
+                        'create'=>"Create question with default text (and Show it)",
+                    ),
+                ),
+            'condition'=>"{QCODE}.valueNAOK< 0",
+            'hidevalidate'=>false,
+        ),
+    );
     private $aLang=array(
-
             'hist'=>array(
                 'view'=>"Show the history question",
                 'createupdate'=>"Create an history question with actual question text",
@@ -119,21 +118,128 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
             'default'=>'Previous comments.',
         ),
     );
-    public function __construct(PluginManager $manager, $id) {
-        parent::__construct($manager, $id);
+    public function init() {
+        /* Tools and Yii config */
+        $this->subscribe('afterPluginLoad');
+        /* Basic settings */
         $this->subscribe('beforeSurveySettings');
         $this->subscribe('newSurveySettings');
-        //Can call plugin
-        $this->subscribe('newDirectRequest');
+
+        /* Add the link in menu */
+        $this->subscribe('beforeToolsMenuRender');
         // Add js and css
-        $this->subscribe('beforeSurveyPage');
+        //~ $this->subscribe('beforeSurveyPage');
+        // Add the Question attribute for managing help to content
+        $this->subscribe('newQuestionAttributes');
+        $this->subscribe('beforeQuestionRender');
+
+    }
+
+    /** @inheritdoc */
+    public function newQuestionAttributes() {
+        $questionAttributes=array(
+            'iterativeQuestion'=> array(
+                'types' => "X",
+                'category' => gT('Display'),
+                'sortorder' => 200,
+                'inputtype'=>'switch',
+                'options'=>array(
+                    0=>gT('No'),
+                    1=>gT('Yes')
+                ),
+                'default'=>0,
+                'caption' => $this->gT("Show help as history"),
+                'help' => $this->gT("If you use iterative questionaire, this question help are shown as history. Automatically set by iterative questionaire."),
+            ),
+        );
+        $this->getEvent()->append('questionAttributes', $questionAttributes);
+    }
+
+    /** @inheritdoc */
+    public function beforeQuestionRender() {
+        if($this->getEvent()->get('type') != "X") {
+            return;
+        }
+        $oEvent = $this->getEvent();
+        $isIterativeQuestion = QuestionAttribute::model()->find(
+            "qid = :qid and attribute = :attribute",
+            array(":qid"=>$oEvent->get('qid'),":attribute" => 'iterativeQuestion')
+        );
+        if(empty($isIterativeQuestion) || $isIterativeQuestion->value == 0) {
+            return;
+        }
+        $historyId = "ciq-history-".$oEvent->get('qid');
+        $questionText = $oEvent->get('text');
+        $questionHelp = $oEvent->get('help');
+        $oEvent->set('class',$oEvent->get('class').' aciq-history');
+        $oEvent->set('help',"");
+        $newText = CHtml::tag('div',array('class'=>"panel-heading"),
+                        CHtml::tag('a',array('data-toggle'=>'collapse','href'=>"#".$historyId,'aria-expanded'=>"false",'aria-controls'=>$historyId),$questionText)
+                    )
+                 . CHtml::tag('div',array('class'=>"panel-collapse collapse",'id'=>$historyId,'aria-labelledby'=>$historyId),
+                        CHtml::tag('div',array('class'=>'panel-body'),$questionHelp)
+                    );
+        $newText = CHtml::tag('div',array('class'=>"panel panel-default"),$newText);
+        $oEvent->set('text',$newText);
+        if(!Yii::app()->clientScript->hasPackage('autoCommentIterativeQuestionnaire2')) {
+            Yii::setPathOfAlias('autoCommentIterativeQuestionnaire2',dirname(__FILE__));
+            Yii::app()->clientScript->addPackage( 'autoCommentIterativeQuestionnaire2', array(
+                'basePath'    => 'autoCommentIterativeQuestionnaire.assets',
+                'css'         => array('autoCommentIterativeQuestionnaire.css'),
+                //~ 'js'          => array('questionExtraSurvey.js'),
+            ));
+            Yii::app()->getClientScript()->registerPackage('autoCommentIterativeQuestionnaire2');
+        }
+    }
+
+    /** Menu and settings part */
+    /**
+     * see beforeToolsMenuRender event
+     *
+     * @return void
+     */
+
+    public function beforeToolsMenuRender()
+    {
+        $event = $this->getEvent();
+        $surveyId = $event->get('surveyId');
+        if(!Permission::model()->hasSurveyPermission($surveyId, 'surveycontent', 'update')) {
+            return;
+        }
+        // Did we have an old survey ?
+        $aTables = App()->getApi()->getOldResponseTables($surveyId);
+        if(count($aTables)>0) {
+            $method = 'actionSelect';
+        } else {
+            $method = 'actionCheck';
+        }
+        $aMenuItem = array(
+            'label' => $this->_translate('Iteration'),
+            'iconClass' => 'fa fa-refresh',
+            'href' => Yii::app()->createUrl(
+                'admin/pluginhelper',
+                array(
+                    'sa' => 'sidebody',
+                    //~ 'href' => $url,
+                    'plugin' => get_class($this),
+                    'method' => $method,
+                    'surveyId' => $surveyId
+                )
+            ),
+        );
+        if (class_exists("\LimeSurvey\Menu\MenuItem")) {
+            $menuItem = new \LimeSurvey\Menu\MenuItem($aMenuItem);
+        } else {
+            $menuItem = new \ls\menu\MenuItem($aMenuItem);
+        }
+        $event->append('menuItems', array($menuItem));
     }
 
     public function beforeSurveyPage()
     {
-        $assetUrl = Yii::app()->assetManager->publish(dirname(__FILE__) . '/assets');
-        Yii::app()->clientScript->registerScriptFile("{$assetUrl}/publickcedelphi.js",CClientScript::POS_END);
-        Yii::app()->clientScript->registerCssFile("{$assetUrl}/publickcedelphi.css");
+        //~ $assetUrl = Yii::app()->assetManager->publish(dirname(__FILE__) . '/assets');
+        //~ Yii::app()->clientScript->registerScriptFile("{$assetUrl}/publickcedelphi.js",CClientScript::POS_END);
+        //~ Yii::app()->clientScript->registerCssFile("{$assetUrl}/publickcedelphi.css");
     }
     public function beforeSurveySettings()
     {
@@ -197,7 +303,7 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
             {
                 $aSettings['launch']=array(
                     'type'=>'link',
-                    'link'=>$this->api->createUrl('plugins/direct', array('plugin' => 'autoCommentIterativeQuestionnaire','surveyid'=>$iSurveyId, 'function' => 'view')),
+                    'link'=>Yii::app()->createUrl('admin/pluginhelper',array('plugin' => get_class($this),'method' => 'actionView','surveyId' => $iSurveyId,'function' => 'view')),
                     'label'=>'Update the survey according to an old answer table',
                     'help'=>'Attention, you lost actual settings',
                     'class'=>array('btn-link','delphi-link'),
@@ -207,7 +313,7 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
             {
                 $aSettings['check']=array(
                     'type'=>'link',
-                    'link'=>$this->api->createUrl('plugins/direct', array('plugin' => 'autoCommentIterativeQuestionnaire','surveyid'=>$iSurveyId, 'function' => 'check')),
+                    'link'=>Yii::app()->createUrl('admin/pluginhelper',array('plugin' => get_class($this),'method' => 'actionCheck','surveyId' => $iSurveyId,'function' => 'check')),
                     'label'=>'Update the survey to add needed question',
                     'help'=>'Attention, you lost actual settings',
                     'class'=>array('btn-link','delphi-link'),
@@ -219,10 +325,9 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
         }
         elseif( $oSurvey && $oSurvey->assessments!='Y' )
         {
-            $clang = Yii::app()->lang;
             $aSettings['info']=array(
                 'type'=>'info',
-                'content'=>"<div class='alert'><strong>".$clang->gT("Assessments mode not activated")."</strong> <br />".sprintf($clang->gT("Assessment mode for this survey is not activated. You can activate it in the %s survey settings %s (tab 'Notification & data management')."),'<a href="'.Yii::app()->createUrl('admin/survey/sa/editsurveysettings/surveyid/'.$iSurveyId).'#notification">','</a>')."</div>",
+                'content'=>"<div class='alert'><strong>".gT("Assessments mode not activated")."</strong> <br />".sprintf(gT("Assessment mode for this survey is not activated. You can activate it in the %s survey settings %s (tab 'Notification & data management')."),'<a href="'.Yii::app()->createUrl('admin/assessments/',array('sa'=>'index','surveyid'=>$iSurveyId)).'">','</a>')."</div>",
             );
             $oEvent->set("surveysettings.{$this->id}", array('name' => get_class($this),'settings'=>$aSettings));
         }
@@ -243,28 +348,12 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
         }
     }
 
+    /**
+     * @deprecated
+     */
     public function newDirectRequest()
     {
-        $oEvent = $this->event;
-        $sAction=$oEvent->get('function');
-
-        if ($oEvent->get('target') != "autoCommentIterativeQuestionnaire")
-            return;
-
-        $this->iSurveyId=Yii::app()->request->getParam('surveyid');
-        $oSurvey=Survey::model()->findByPk($this->iSurveyId);
-        if(!$oSurvey)
-        {
-            throw new CHttpException(404,"Invalid Survey Id." );
-        }
-        if($oSurvey->active=="Y")
-            $this->bSurveyActivated=true;
-        // We have survey , test access
-        if( !Permission::model()->hasSurveyPermission($this->iSurveyId, 'surveycontent', 'update'))
-        {
-            Yii::app()->setFlashMessage("Access error : you don't have suffisant rigth to update survey content.",'error');
-            App()->controller->redirect(array('admin/survey','sa'=>'view','surveyid'=>$this->iSurveyId));
-        }
+        return;
 
         $this->setBaseLanguage();
         if($sAction=='view')
@@ -287,13 +376,17 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
         else
             $this->sLanguage=$oSurvey->language;
     }
+    public function actionSettings()
+    {
+        
+    }
     public function actionCheck()
     {
-
+        $this->iSurveyId = $this->api->getRequest()->getParam('surveyId');
+        $this->_checkAccess();
+        $this->setBaseLanguage();
         $oRequest = $this->api->getRequest();
-
-        if($oRequest->getPost('cancel'))
-        {
+        if($oRequest->getPost('cancel')) {
             App()->controller->redirect(array('admin/survey','sa'=>'view','surveyid'=>$this->iSurveyId));
         }
         if($oRequest->getIsPostRequest() && $oRequest->getPost('confirm'))
@@ -305,8 +398,9 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
                 {
                     foreach($aQuestionActions as $sAction=>$sDo)
                     {
-                        if($sDo)
+                        if($sDo) {
                             $this->doQuestion($iQid,$sType,$sAction);
+                        }
                     }
                 }
             }
@@ -315,50 +409,47 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
         $oQuestions=$this->getDelphiQuestion();
         $aQuestionsSettings=array();
         $aQuestionsInfo=array();
-        foreach($oQuestions as $oQuestion)
-        {
+        $aSettings = array();
+        foreach($oQuestions as $oQuestion) {
+            $aQuestionSetting = array();
             $sFieldName=$oQuestion->sid."X".$oQuestion->gid."X".$oQuestion->qid;
             $aQuestionsInfo[$oQuestion->qid]=array();
             // Test if question is hidden (already validated)
             $oAttributeHidden=QuestionAttribute::model()->find("qid=:qid AND attribute='hidden'",array(":qid"=>$oQuestion->qid));
             $sQuestionTextTitle=FlattenText($oQuestion->question);
             $sQuestionText=ellipsize($sQuestionTextTitle,80);
-            if($oQuestion->title!==preg_replace("/[^_a-zA-Z0-9]/", "", $oQuestion->title))
-            {
-                $aQuestionsSettings["q_{$oQuestion->qid}"]['type']='info';
-                $aQuestionsSettings["q_{$oQuestion->qid}"]['content']=CHtml::tag('div',array('class'=>'questiontitle','title'=>$sQuestionTextTitle),"<strong>Invalid title : {$oQuestion->title}</strong> : LimeSurvey 2.05 title allow only alphanumeric (no space, no dot ..)");
-            }
-            elseif($oAttributeHidden && $oAttributeHidden->value)
-            {
-                $aQuestionsSettings["q_{$oQuestion->qid}"]['type']='info';
-                $aQuestionsSettings["q_{$oQuestion->qid}"]['content']=CHtml::tag('div',array('class'=>'questiontitle','title'=>$sQuestionTextTitle),"<strong>Validated question {$oQuestion->title}</strong> : {$sQuestionText}");
-            }
-            else
-            {
-                $aQuestionsSettings["q_{$oQuestion->qid}"]['type']='info';
-                $aQuestionsSettings["q_{$oQuestion->qid}"]['content']=CHtml::tag('div',array('class'=>'questiontitle','title'=>$sQuestionTextTitle),"<strong>{$oQuestion->title}</strong> : {$sQuestionText}");
-                foreach($this->aDelphiCodes as $sDelphiCode=>$aSettings)
-                {
-                    $aQuestionsSettings=array_merge($aQuestionsSettings,$this->getCheckQuestionSettings($oQuestion->qid,$oQuestion->title,$sDelphiCode));
+            if($oQuestion->title!==preg_replace("/[^_a-zA-Z0-9]/", "", $oQuestion->title)) {
+                $aQuestionSetting["q_{$oQuestion->qid}"]['type']='info';
+                $aQuestionSetting["q_{$oQuestion->qid}"]['content']=CHtml::tag('div',array('class'=>'questiontitle','title'=>$sQuestionTextTitle),"<strong>Invalid title : {$oQuestion->title}</strong> : LimeSurvey 2.05 title allow only alphanumeric (no space, no dot ..)");
+            } elseif($oAttributeHidden && $oAttributeHidden->value) {
+                $aQuestionSetting["q_{$oQuestion->qid}"]['type']='info';
+                $aQuestionSetting["q_{$oQuestion->qid}"]['content']=CHtml::tag('div',array('class'=>'questiontitle','title'=>$sQuestionTextTitle),"<strong>Validated question {$oQuestion->title}</strong> : {$sQuestionText}");
+            } else {
+                foreach($this->aDelphiCodes as $sDelphiCode=>$aSettings) {
+                    $aQuestionSetting=array_merge($aQuestionSetting,$this->getCheckQuestionSettings($oQuestion->qid,$oQuestion->title,$sDelphiCode));
                 }
             }
+            $aQuestionsSettings["<strong>{$oQuestion->title}</strong> : {$sQuestionText}"] = $aQuestionSetting;
         }
         $aData['aSettings']=$aQuestionsSettings;
+        $aData['title']=$this->gT("Check survey");
         $aData['aResult']=$this->aResult;
-
-        $aData['updateUrl']=$this->api->createUrl('plugins/direct', array('plugin' => 'autoCommentIterativeQuestionnaire','surveyid'=>$this->iSurveyId, 'function' => 'check'));
-        $this->displayContent($aData,array("validate"));
+        $aData['updateUrl']=$this->api->createUrl('admin/pluginhelper', array('sa'=>'sidebody','plugin' => get_class($this), 'method' => 'actionUpdate','surveyId'=>$this->iSurveyId));
+        return $this->_renderPartial($aData,array("validate"));
     }
     /**
     * Show the form
     *
     **/
-    public function actionView()
+    public function actionSelect()
     {
+        $this->iSurveyId = $this->api->getRequest()->getParam('surveyId');
+        $this->_checkAccess();
         //$baseSchema = SurveyDynamic::model($this->iSurveyId)->getTableSchema();
         $aTables = App()->getApi()->getOldResponseTables($this->iSurveyId);
-        if(count($aTables))
+        if(count($aTables)) {
             rsort ($aTables);
+        }
         $list=array();
         foreach ($aTables as $table)
         {
@@ -375,37 +466,32 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
                 'label' => gT('Source table'),
                 'type' => 'select',
                 'options' => $list,
+                'htmlOptions' => array(
+                    'empty'=>gT("Please choose …"),
+                    'required'=>true,
+                ),
             );
             $aData['settings']['withuncompleted'] = array(
                 'label' => gT('Not completed'),
                 'type' => 'checkbox',
             );
             $aData['buttons'] = array(
-                gT('Validate question before import') => array(
-                    'name' => 'confirm',
-                    'type'=> 'submit',
-                    'htmlOptions'=>array(
-                        'value'=>'confirm',
-                    ),
-                ),
-                gT('Cancel') => array(
-                    'name' => 'cancel'
-                ),
+                'validate'=> $this->gT('Validate question before import'),
+                'cancel' => gT('Cancel'),
             );
         }else{
             $aData['settings']['oldsurveytable'] = array(
                 'type' => 'info',
                 'content' => CHtml::tag('div',array('class'=>'alert'),'You have old survey table, but no answer inside'),
             );
-
             $aData['buttons'] = array(
-                gT('Cancel') => array(
-                    'name' => 'cancel'
-                ),
+                'validate'=> null,
+                'cancel' => gT('Cancel'),
             );
         }
-        $aData['updateUrl']=$this->api->createUrl('plugins/direct', array('plugin' => 'autoCommentIterativeQuestionnaire','surveyid'=>$this->iSurveyId, 'function' => 'validate'));
-        $this->displayContent($aData,array("select"));
+        $aData['title'] = $this->gT("Survey selection");
+        $aData['updateUrl']=$this->api->createUrl('admin/pluginhelper', array('sa'=>'sidebody','plugin' => get_class($this), 'method' => 'actionValidate','surveyId'=>$this->iSurveyId));
+        return $this->_renderPartial($aData,array("select"));
     }
     /**
     * Validate survey before updating
@@ -413,7 +499,10 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
     **/
     public function actionValidate()
     {
-        if(Yii::app()->request->getPost('confirm'))
+        $this->iSurveyId = $this->api->getRequest()->getParam('surveyId');
+        $this->_checkAccess();
+        $this->setBaseLanguage();
+        if(Yii::app()->request->getPost('oldsurveytable'))
         {
             $this->bUpdateHistory=($this->get("updatequestion", 'Survey', $this->iSurveyId,"Y")=="Y");
             $sTableName=$this->sTableName=Yii::app()->request->getPost('oldsurveytable');
@@ -422,8 +511,9 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
                 Yii::app()->setFlashMessage("Bad table name.",'error');
                 App()->controller->redirect($this->api->createUrl('plugins/direct', array('plugin' => 'autoCommentIterativeQuestionnaire','surveyid'=>$this->iSurveyId, 'function' => 'view')));
             }
-            if(Yii::app()->request->getPost('validate'))
+            if(Yii::app()->request->getPost('confirm')) {
                 $this->actionUpdate();
+            }
             $oldTable = PluginDynamic::model($sTableName);
             $this->oldSchema = $oldSchema = $oldTable->getTableSchema();
 
@@ -434,20 +524,19 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
             $aQuestionsInfo=array();
 
             foreach($oQuestions as $oQuestion){
-                if(in_array($oQuestion->type,self::$aValidQuestion))
-                {
-                    $aQuestionsSettings=array_merge($aQuestionsSettings,$this->getValidateQuestionSettings($oQuestion));
+                $legend = $aQuestionsSetting = null;
+                if(in_array($oQuestion->type,self::$aValidQuestion)) {
+                    $aQuestionsSetting=$this->getValidateQuestionSettings($oQuestion);
+                    $legend = "<span class='label label-info'>{$oQuestion->title}</span> : ".ellipsize(flattenText($oQuestion->question),50);
+                } elseif(in_array($oQuestion->type,self::$aTextQuestion)) {
+                    $aQuestionsSetting=$this->getCommentQuestionSettings($oQuestion);
+                    $legend = "<span class='label label-info'>{$oQuestion->title}</span> : ".ellipsize(flattenText($oQuestion->question),50);
                 }
-                elseif(in_array($oQuestion->type,self::$aTextQuestion))
-                {
-                    $aQuestionsSettings=array_merge($aQuestionsSettings,$this->getCommentQuestionSettings($oQuestion));
-                }
-                else
-                {
-
+                if($legend){
+                    $aQuestionsSettings[$legend] = $aQuestionsSetting;
                 }
             }
-            $aSurveySettings['oldsurveytable']=array(
+            $aSurveySettings[$this->gT("Previous responses")]['oldsurveytable']=array(
                 'label' => gT('Source table'),
                 'type' => 'select',
                 'options' => array($sTableName=>$sTableName),
@@ -456,15 +545,20 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
                     'readonly'=>true,
                 ),
             );
-            $aSurveySettings['withuncompleted'] = array(
+            $aSurveySettings[$this->gT("Previous responses")]['withuncompleted'] = array(
                 'label' => gT('Not completed'),
                 'type' => 'checkbox',
                 'current' => App()->request->getPost('withuncompleted'),
             );
             $aData['aSettings']=array_merge($aQuestionsSettings,$aSurveySettings);
-            $aData['updateUrl']=$this->api->createUrl('plugins/direct', array('plugin' => 'autoCommentIterativeQuestionnaire','surveyid'=>$this->iSurveyId, 'function' => 'validate'));
+            $aData['buttons'] = array(
+                'confirm' => $this->gT("Confirm update of survey"),
+                'cancel' => $this->gT("Cancel"),
+            );
+            $aData['updateUrl']=$this->api->createUrl('admin/pluginhelper', array('sa'=>'sidebody','plugin' => get_class($this), 'method' => 'actionValidate','surveyId'=>$this->iSurveyId));
             LimeExpressionManager::SetDirtyFlag();
-            $this->displayContent($aData,array("validate"));
+            //~ tracevar($aData);
+            return $this->_renderPartial($aData,array("validate"));
         }
         else
         {
@@ -477,27 +571,25 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
     **/
     public function actionUpdate()
     {
-
+        $this->iSurveyId = $this->api->getRequest()->getParam('surveyId');
+        $this->_checkAccess();
+        $this->setBaseLanguage();
         $oRequest = $this->api->getRequest();
-        if($oRequest->getPost('cancel'))
-        {
+        if($oRequest->getPost('cancel')) {
             App()->controller->redirect(array('admin/survey','sa'=>'view','surveyid'=>$this->iSurveyId));
         }
         if($oRequest->getIsPostRequest() && $oRequest->getPost('confirm'))
         {
-            if(!$this->oldSchema)
-            {
+            if(!$this->oldSchema) {
                 $sTableName=$this->sTableName=Yii::app()->request->getPost('oldsurveytable');
                 $aTables = App()->getApi()->getOldResponseTables($this->iSurveyId);
                 if(!in_array($sTableName,$aTables)){
                     Yii::app()->setFlashMessage("Bad table name.",'error');
                     App()->controller->redirect($this->api->createUrl('plugins/direct', array('plugin' => 'autoCommentIterativeQuestionnaire','surveyid'=>$this->iSurveyId, 'function' => 'view')));
                 }
-
                 $oldTable = PluginDynamic::model($sTableName);
-                $this->oldSchema=$oldSchema = $oldTable->getTableSchema();
-            }else
-            {
+                $this->oldSchema = $oldSchema = $oldTable->getTableSchema();
+            }else {
                 $oldSchema=$this->oldSchema;
             }
             $aQuestionsValidations=$oRequest->getPost('validate',array());
@@ -505,13 +597,13 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
             {
                 $bHidden=QuestionAttribute::model()->find("qid=:qid AND attribute='hidden'",array(":qid"=>$iQid));
                 $oQuestion=Question::model()->find("sid=:sid AND qid=:qid",array(":sid"=>$this->iSurveyId,":qid"=>"{$iQid}"));
-
                 if($oQuestion && !$bHidden && $sValue=='hide')
                 {
-                    if($this->setQuestionHidden($oQuestion->qid))
+                    if($this->setQuestionHidden($oQuestion->qid)) {
                         $this->aResult['success'][]="{$oQuestion->title} was hide to respondant";
-                    else
+                    } else {
                         $this->aResult['warning'][]="{$oQuestion->title} unable to hide to respondant";
+                    }
                     // Hide comment question
                     if($oQuestion && in_array($oQuestion->type,$this->aDelphiCodes))
                     {
@@ -529,8 +621,9 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
                 }
                 elseif($oQuestion && $bHidden && $sValue=='show')
                 {
-                    if($this->setQuestionShown($iQid))
+                    if($this->setQuestionShown($iQid)) {
                         $this->aResult['success'][]="{$oQuestion->title} was shown to respondant";
+                    }
                 }
             }
             $aQuestionsValidations=$oRequest->getPost('q',array());
@@ -540,10 +633,11 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
                 {
                     foreach($aQuestionActions as $sAction=>$sDo)
                     {
-                        if($sAction=='select')
+                        if($sAction=='select') {
                             $this->doQuestion($iQid,$sType,$sAction,$oldSchema,$sDo);
-                        elseif($sDo)
+                        } elseif($sDo) {
                             $this->doQuestion($iQid,$sType,$sAction,$oldSchema);
+                        }
                     }
                 }
             }
@@ -551,47 +645,32 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
             foreach($aQuestionsValidations as $iQid=>$aQuestionAction)
             {
                 $this->doCommentQuestion($iQid,$aQuestionAction);
-
             }
         }
         LimeExpressionManager::SetDirtyFlag();
         //~ $aData=array();
         //~ $this->displayContent($aData,array("result"));
     }
-    private function displayContent($aData=false,$views=false)
+
+    /**
+     * @deprecated
+     */
+    private function _renderPartial($aData=false,$views=false)
     {
-        // TODO : improve and move to PluginsController
-        if(!$aData){$aData=array();}
+        if(!$aData){
+            $aData=array();
+        }
         $aData['surveyid']=$aData['iSurveyID']=$aData['iSurveyId'] = $this->iSurveyId;
         $aData['bSurveyActivated']=$this->bSurveyActivated;
-        $oAdminController=new AdminController('admin');
-        $oCommonAction = new Survey_Common_Action($oAdminController,'survey');
-
-        $aData['sImageURL'] = Yii::app()->getConfig('adminimageurl');
+        $aData['title'] = !empty($aData['title'] ) ? $aData['title']  : $this->gT("Iterative questionnaire");
         $aData['aResult']=$this->aResult;
-
-        /* Mimic 2.06 system : must fix */
-        ob_start();
-        header("Content-type: text/html; charset=UTF-8"); // needed for correct UTF-8 encoding
-        $assetUrl = Yii::app()->assetManager->publish(dirname(__FILE__) . '/assets');
-        Yii::app()->clientScript->registerScriptFile($assetUrl . '/kcedelphi.js',CClientScript::POS_END);
-        Yii::app()->clientScript->registerCssFile($assetUrl . '/kcedelphi.css');
-        Yii::app()->clientScript->registerCssFile($assetUrl . '/settingsfix.css');
-        $oAdminController->_getAdminHeader();
-        $oAdminController->_showadminmenu($this->iSurveyId);
-        if($this->iSurveyId)
-            $oCommonAction->_surveybar($this->iSurveyId);
+        $content = "";
         foreach($views as $view){
-            Yii::setPathOfAlias("views.{$view}", dirname(__FILE__).DIRECTORY_SEPARATOR."views".DIRECTORY_SEPARATOR.$view);
-            $oAdminController->renderPartial("views.{$view}",$aData);
+            $content .= $this->renderPartial($view,$aData, true);
         }
-        $oAdminController->_loadEndScripts();
-        $oAdminController->_getAdminFooter('http://manual.limesurvey.org', gT('LimeSurvey online manual'));
-        $sOutput = ob_get_contents();
-        ob_clean();
-        App()->getClientScript()->render($sOutput);
-        echo $sOutput;
-        Yii::app()->end();
+        
+        return $content;
+        //~ Yii::app()->end();
     }
 
     private function getOldField(CDbTableSchema $oldSchema,$iQid)
@@ -683,27 +762,27 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
             }
             if($iTotalValue>0)
             {
-                $htmlOldAnswersTable = "<table class='kce-table'><thead><tr><td></td>";
-                $htmlOldAnswersTable.= CHtml::tag('th',array(),gT('Count'));
-                $htmlOldAnswersTable.= CHtml::tag('th',array(),'%');
+                $htmlOldAnswersTable = "<div class='table-responsive'><table class='kce-table table table-striped table-bordered'><thead><tr><td></td>";
+                $htmlOldAnswersTable.= CHtml::tag('th',array('class'=>"text-center"),gT('Count'));
+                $htmlOldAnswersTable.= CHtml::tag('th',array('class'=>"text-center"),'%');
                 $htmlOldAnswersTable.= "</tr></thead><tbody>";
                 foreach ($aOldAnswers as $aOldAnswer) {
                     if($aOldAnswer['assessment_value']!=0)
                     {
                         $htmlOldAnswersTable.= "<tr>";
-                        $htmlOldAnswersTable.= CHtml::tag('th',array(),$aOldAnswer['answer']);
-                        $htmlOldAnswersTable.= CHtml::tag('td',array(),$aOldAnswer['count']);
-                        $sPercentage=($iTotalValue>0) ? number_format($aOldAnswer['count']/$iTotalValue*100)."%" : "/";
-                        $htmlOldAnswersTable.= CHtml::tag('td',array(),$sPercentage);
+                        $htmlOldAnswersTable.= CHtml::tag('th',array('class'=>"text-left"),$aOldAnswer['answer']);
+                        $htmlOldAnswersTable.= CHtml::tag('td',array('class'=>"text-center"),$aOldAnswer['count']);
+                        $sPercentage=($iTotalValue>0) ? str_pad(number_format($aOldAnswer['count']/$iTotalValue*100),3," ",STR_PAD_LEFT)."%" : "/";
+                        $htmlOldAnswersTable.= CHtml::tag('td',array('class'=>"text-center"),$sPercentage);
                         $htmlOldAnswersTable.= "</tr>";
                     }
                 }
                 $htmlOldAnswersTable.= "<tr>";
                 $htmlOldAnswersTable.= CHtml::tag('th',array(),gT('Total'));
-                $htmlOldAnswersTable.= CHtml::tag('td',array(),$iTotalValue);
-                $htmlOldAnswersTable.= CHtml::tag('td',array(),"100%");
+                $htmlOldAnswersTable.= CHtml::tag('td',array('class'=>"text-center"),$iTotalValue);
+                $htmlOldAnswersTable.= CHtml::tag('td',array('class'=>"text-center"),"100%");
                 $htmlOldAnswersTable.= "</tr>";
-                $htmlOldAnswersTable.= "</tbody></table>";
+                $htmlOldAnswersTable.= "</tbody></table></div>";
             }
         }
         App()->setLanguage(App()->session['adminlang']);
@@ -716,8 +795,9 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
     private function getDelphiQuestion()
     {
         static $aoQuestionsInfo;
-        if(is_array($aoQuestionsInfo))
+        if(is_array($aoQuestionsInfo)) {
             return $aoQuestionsInfo;
+        }
         $oCriteria = new CDbCriteria();
         $oCriteria->addCondition("t.sid=:sid AND t.language=:language");
         $oCriteria->params=array(":sid"=>$this->iSurveyId,":language"=>$this->sLanguage);
@@ -729,16 +809,18 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
         foreach($oQuestions as $oQuestion){
             $key="G".str_pad($oQuestion->groups->group_order,5,"0",STR_PAD_LEFT)."Q".str_pad($oQuestion->question_order,5,"0",STR_PAD_LEFT);
             $oAnswer=Answer::model()->find("qid=:qid and assessment_value!=0",array(":qid"=>$oQuestion->qid));
-            if($oAnswer)
+            if($oAnswer) {
                 $aoQuestionsInfo[$key]=$oQuestion;
+            }
         }
         return $aoQuestionsInfo;
     }
     private function getCommentQuestion()
     {
         static $aoQuestionsInfo;
-        if(is_array($aoQuestionsInfo))
+        if(is_array($aoQuestionsInfo)) {
             return $aoQuestionsInfo;
+        }
         $oCriteria = new CDbCriteria();
         $oCriteria->addCondition("t.sid=:sid AND t.language=:language and parent_qid=0");
         $oCriteria->params=array(":sid"=>$this->iSurveyId,":language"=>$this->sLanguage);
@@ -782,16 +864,18 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
             switch($sDo)
             {
                 case 'none':
-                    if($oQuestion)
+                    if($oQuestion) {
                         $this->addResult("{$oQuestion->title} exist in survey.",'warning');
+                    }
                     return;
                 case 'hide':
                     if($oQuestion && !$bHidden)
                     {
-                        if($this->setQuestionHidden($oQuestion->qid))
+                        if($this->setQuestionHidden($oQuestion->qid)) {
                             $this->aResult['success'][]="{$oQuestion->title} was hide to respondant";
-                        else
+                        } else {
                             $this->aResult['warning'][]="{$oQuestion->title} unable to hide to respondant";
+                        }
                     }
                     return;
                 case 'create':
@@ -895,11 +979,19 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
                             $newQuestionHelp = $oQuestionBase->question;
                             if($oldAnswerTable=$this->getOldAnswerTable($oQuestionBase->qid,$oQuestionBase->type,$sLang))
                             {
-                                $newQuestionHelp .= "<hr />";
+                                $newQuestionHelp .= "<hr>";
                                 $newQuestionHelp .= $oldAnswerTable;
                             }
                             $newQuestionHelp = "<div class='kce-content'>".$newQuestionHelp."</div>";
                             Question::model()->updateAll(array('help'=>$newQuestionHelp),"sid=:sid AND title=:title AND language=:language",array(":sid"=>$this->iSurveyId,":title"=>$oQuestionBase->title.$sType,":language"=>$sLang));
+                            $oQuestionDelphi = Question::model()->find('sid=:sid AND title=:title',array(":sid"=>$this->iSurveyId,":title"=>$oQuestionBase->title.$sType));
+                            if($oQuestion) {
+                                tracevar([$oQuestionBase->title.$sType,$oQuestionDelphi->qid]);
+                                $this->setQuestionDelphi($oQuestionDelphi->qid);
+                                $this->addResult("{$oQuestionBase->title}{$sType} (".join(",",$aLangs)." question help updated with list of answer",'success');
+                            } else {
+                                $this->addResult("{$oQuestionBase->title}{$sType} question help was not updated: unable to find question.",'warning');
+                            }
                         }else{
                             $this->addResult("Unable to find $iQid to update history for language $sLang.",'error');
                         }
@@ -923,7 +1015,14 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
                                 $newQuestionHelp="<div class='kce-content'>".$baseQuestionText."</div>";
                                 Question::model()->updateAll(array('help'=>$newQuestionHelp),"sid=:sid AND title=:title AND language=:language",array(":sid"=>$this->iSurveyId,":title"=>$oQuestionBase->title.$sType,":language"=>$sLang));
                             }
-                            $this->addResult("{$oQuestionBase->title}{$sType} (".join(",",$aLangs)." question help updated with list of answer",'success');
+                            $oQuestionDelphi = Question::model()->find('sid=:sid AND title=:title',array(":sid"=>$this->iSurveyId,":title"=>$oQuestionBase->title.$sType));
+                            if($oQuestion) {
+                                tracevar([$oQuestionBase->title.$sType,$oQuestionDelphi->qid]);
+                                $this->setQuestionDelphi($oQuestionDelphi->qid);
+                                $this->addResult("{$oQuestionBase->title}{$sType} (".join(",",$aLangs)." question help updated with list of answer",'success');
+                            } else {
+                                $this->addResult("{$oQuestionBase->title}{$sType} question help was not updated: unable to find question.",'warning');
+                            }
                         }
                         else
                         {
@@ -953,7 +1052,14 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
                                 $newQuestionText .= "</div>";
                                 Question::model()->updateAll(array('question'=>$newQuestionText),"sid=:sid AND title=:title AND language=:language",array(":sid"=>$this->iSurveyId,":title"=>$oQuestionBase->title.$sType,":language"=>$sLang));
                             }
-                            $this->addResult("{$oQuestionBase->title}{$sType} question text updated with list of answer",'success');
+                            $oQuestionDelphi = Question::model()->find('sid=:sid AND title=:title',array(":sid"=>$this->iSurveyId,":title"=>$oQuestionBase->title.$sType));
+                            if($oQuestion) {
+                                tracevar([$oQuestionBase->title.$sType,$oQuestionDelphi->qid]);
+                                $this->setQuestionDelphi($oQuestionDelphi->qid);
+                                $this->addResult("{$oQuestionBase->title}{$sType} (".join(",",$aLangs)." question help updated with list of answer",'success');
+                            } else {
+                                $this->addResult("{$oQuestionBase->title}{$sType} question help was not updated: unable to find question.",'warning');
+                            }
                         }
                         else
                         {
@@ -1051,7 +1157,13 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
                                     $newQuestionHelp="<div class='kce-content'>".$baseQuestionText."</div>";
                                 Question::model()->updateAll(array('help'=>$newQuestionHelp),"sid=:sid AND qid=:qid AND language=:language",array(":sid"=>$this->iSurveyId,":qid"=>$oQuestion->qid,":language"=>$sLang));
                             }
-                            $this->addResult("{$oQuestionBase->title}h (".join(",",$aLangs).") question help updated with list of answer",'success');
+                            $oQuestionDelphi = Question::model()->find('sid=:sid AND qid=:qid',array(":sid"=>$this->iSurveyId,":qid"=>$oQuestion->qid));
+                            if($oQuestion) {
+                                $this->setQuestionDelphi($oQuestionDelphi->qid);
+                                $this->addResult("{$oQuestionBase->title}h (".join(",",$aLangs)." question help updated with list of answer",'success');
+                            } else {
+                                $this->addResult("{$oQuestionBase->title}h question help was not updated: unable to find question.",'warning');
+                            }
                         }
                         else
                         {
@@ -1196,6 +1308,27 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
         }
         else
             $this->addResult("Unable to set {$iQid} hidden",'error',$oAttribute->getErrors());
+    }
+    private function setQuestionDelphi($iQid)
+    {
+        $oQuestion=Question::model()->find("sid=:sid AND qid=:qid",array(":sid"=>$this->iSurveyId,":qid"=>$iQid));
+        tracevar($iQid);
+        if(!$oQuestion) {
+            return;
+        }
+        $oAttribute=QuestionAttribute::model()->find("qid=:qid AND attribute='iterativeQuestion'",array(":qid"=>$iQid));
+        if(!$oAttribute)
+        {
+            $oAttribute=new QuestionAttribute;
+            $oAttribute->qid=$iQid;
+            $oAttribute->attribute="iterativeQuestion";
+        }
+        $oAttribute->value=1;
+        if($oAttribute->save()) {
+            return true;
+        } else {
+            $this->addResult("Unable to set {$iQid} iterativeQuestion",'error',$oAttribute->getErrors());
+        }
     }
     private function setQuestionShown($iQid)
     {
@@ -1503,15 +1636,12 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
         $oAttributeHidden=QuestionAttribute::model()->find("qid=:qid AND attribute='hidden'",array(":qid"=>$oQuestion->qid));
         $sQuestionTextTitle=str_replace("'",'’',FlattenText($oQuestion->question));
         $sQuestionText=ellipsize($sQuestionTextTitle,50);
-        if($oQuestion->title!==preg_replace("/[^_a-zA-Z0-9]/", "", $oQuestion->title))
-        {
+        if($oQuestion->title!==preg_replace("/[^_a-zA-Z0-9]/", "", $oQuestion->title)) {
             $aQuestionsSettings["q_{$oQuestion->qid}"]['type']='info';
             $aQuestionsSettings["q_{$oQuestion->qid}"]['content']=CHtml::tag('div',array('class'=>'questiontitle','title'=>$sQuestionTextTitle),"<strong>Invalid title : {$oQuestion->title}</strong> : LimeSurvey 2.05 title allow only alphanumeric (no space, no dot ..)");
-        }
-        else
-        {
+        } else {
             $aQuestionsSettings["validate[{$oQuestion->qid}]"]['type']='select';
-            $aQuestionsSettings["validate[{$oQuestion->qid}]"]['label']="<div class='' title='{$sQuestionTextTitle}'><span class='label label-info'>{$oQuestion->title}</span> : {$sQuestionText}</div>";
+            $aQuestionsSettings["validate[{$oQuestion->qid}]"]['label']="<div class='' title='{$sQuestionTextTitle}'>".$this->gT("Display this question")."</div>";
             $aQuestionsSettings["validate[{$oQuestion->qid}]"]['options']=array(
                 'hide'=>"Don't ask this question",
                 'show'=>"Ask this question",
@@ -1530,16 +1660,13 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
                 $oldAnswerText =null;
             }
             // Do label
-            if($oldAnswerText)
-            {
-                $sLabel="<span class='label'>{$oQuestion->title}h</span> <div class='kcetitle'>$oldAnswerText</div><span class='label label-inverse' data-kcetitle='true'>See</span> comments from the previous round (automatic)";
-                //$sLabel="<span class='label'>{$oQuestion->title}h</span>comments from the previous round (automatic)";
-                //$sLabel.="<div class='old-answers-list'>".$oldAnswerText."</div>";
-
-            }
-            else
-            {
-                $sLabel="<span class='label'>{$oQuestion->title}h</span> <span class='label label-warning'>No</span> comments from the previous round (automatic)";
+            if($oldAnswerText) {
+                $sLabel="<span class='label label-info'>{$oQuestion->title}h</span>"
+                        . $this->gT("Show comments from the previous round (automatic)")
+                        . " <a class='label label-default' role='button' data-toggle='collapse' href='#previous{$oQuestion->title}' aria-expanded='false' aria-controls='collapseExample'><i class='fa fa-eye'> </i> See</a> "
+                        . "<div class='collapse' id='previous{$oQuestion->title}'><div class='well text-left small'>$oldAnswerText</div></div>";
+            } else {
+                $sLabel="<span class='label label-warning'>{$oQuestion->title}h</span> No comments from the previous round (automatic)";
             }
             // Adding history question only if we have old field
             // Find if history exist
@@ -1557,7 +1684,6 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
             );
             if($oHistoryQuestion)
             {
-
                 $oAttributeHidden=QuestionAttribute::model()->find("qid=:qid AND attribute='hidden'",array(":qid"=>$oHistoryQuestion->qid));
                 unset($aSettings['options']['none']);
                 unset($aSettings['options']['create']);
@@ -1616,5 +1742,45 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
         }
         if($oTrace)
             tracevar($oTrace);
+    }
+
+    private function _translate($string)
+    {
+        // @Todo, currently return string
+        return $string;
+    }
+    private function _checkAccess() {
+        if(is_null($this->iSurveyId)) {
+            return;
+        }
+        $oSurvey = Survey::model()->findByPk($this->iSurveyId);
+        if(!$oSurvey) {
+            throw new CHttpException(404,"Invalid Survey Id." );
+        }
+        if($oSurvey->active=="Y") {
+            $this->bSurveyActivated=true;
+        }
+        if( !Permission::model()->hasSurveyPermission($this->iSurveyId, 'surveycontent', 'update')) {
+            throw new CHttpException(401,"Invalid Survey Id." );
+        }
+    }
+
+    /**
+     * Add this translation just after loaded all plugins
+     * @see event afterPluginLoad
+     */
+    public function afterPluginLoad(){
+        // messageSource for this plugin:
+        $messageSource=array(
+            'class' => 'CGettextMessageSource',
+            'cacheID' => get_class($this).'Lang',
+            'cachingDuration'=>3600,
+            'forceTranslation' => true,
+            'useMoFile' => true,
+            'basePath' => __DIR__ . DIRECTORY_SEPARATOR.'locale',
+            'catalog'=>'messages',// default from Yii
+        );
+        Yii::app()->setComponent(get_class($this),$messageSource);
+        Yii::setPathOfAlias(get_class($this), dirname(__FILE__));
     }
 }

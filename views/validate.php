@@ -1,7 +1,5 @@
-<div class='ui-widget ui-widget-content ui-corner-all'>
-    <div class='header ui-widget-header'><?php eT("Survey selection");?></div>
-    <div class='ui-widget ui-widget-content ui-corner-all row-fluid'>
-    <div class="span8 offset2">
+<div class="row">
+    <h3><?php echo $title ?></h3>
     <?php if($bSurveyActivated) { ?>
         <div class='alert alert-danger'>This survey is activated. You can not create question</div>
     <?php } ?>
@@ -12,6 +10,4 @@
 
     <?php include "subviews/form.php" ?>
 
-    </div>
-    </div>
 </div>
