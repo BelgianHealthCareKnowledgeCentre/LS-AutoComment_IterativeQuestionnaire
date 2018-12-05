@@ -7,7 +7,7 @@
  * @copyright 2014-2018 Denis Chenu <http://sondages.pro>
  * @copyright 2014-2018 Belgian Health Care Knowledge Centre (KCE) <http://kce.fgov.be>
  * @license AGPL v3
- * @version 3.1.1
+ * @version 4.1.0
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -63,7 +63,7 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
                         'create'=>"Create question with default text (and Show it)",
                     ),
                 ),
-            'condition'=>"{QCODE}.valueNAOK< 0",
+            'condition'=>"{QCODE}.valueNAOK < 0",
             'hidevalidate'=>false,
         ),
     );
@@ -241,33 +241,52 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
         if(!Permission::model()->hasSurveyPermission($surveyId, 'surveycontent', 'update')) {
             return;
         }
+        $menuItems = array();
         // Did we have an old survey ?
         $aTables = App()->getApi()->getOldResponseTables($surveyId);
         if(count($aTables)>0) {
-            $method = 'actionSelect';
-        } else {
-            $method = 'actionCheck';
+            $aMenuItem = array(
+                'label' => $this->gT('Iteration'),
+                'iconClass' => 'fa fa-refresh',
+                'href' => Yii::app()->createUrl(
+                    'admin/pluginhelper',
+                    array(
+                        'sa' => 'sidebody',
+                        //~ 'href' => $url,
+                        'plugin' => get_class($this),
+                        'method' => 'actionSelect',
+                        'surveyId' => $surveyId
+                    )
+                ),
+            );
+            if (class_exists("\LimeSurvey\Menu\MenuItem")) {
+                $menuItems[] = new \LimeSurvey\Menu\MenuItem($aMenuItem);
+            } else {
+                $menuItems[] = new \ls\menu\MenuItem($aMenuItem);
+            }
         }
-        $aMenuItem = array(
-            'label' => $this->gT('Iteration'),
-            'iconClass' => 'fa fa-refresh',
-            'href' => Yii::app()->createUrl(
-                'admin/pluginhelper',
-                array(
-                    'sa' => 'sidebody',
-                    //~ 'href' => $url,
-                    'plugin' => get_class($this),
-                    'method' => $method,
-                    'surveyId' => $surveyId
-                )
-            ),
-        );
-        if (class_exists("\LimeSurvey\Menu\MenuItem")) {
-            $menuItem = new \LimeSurvey\Menu\MenuItem($aMenuItem);
-        } else {
-            $menuItem = new \ls\menu\MenuItem($aMenuItem);
+        if(empty($aTables)) {
+            $aMenuItem = array(
+                'label' => $this->gT('Check survey for iteration'),
+                'iconClass' => 'fa fa-refresh',
+                'href' => Yii::app()->createUrl(
+                    'admin/pluginhelper',
+                    array(
+                        'sa' => 'sidebody',
+                        //~ 'href' => $url,
+                        'plugin' => get_class($this),
+                        'method' => 'actionCheck',
+                        'surveyId' => $surveyId
+                    )
+                ),
+            );
+            if (class_exists("\LimeSurvey\Menu\MenuItem")) {
+                $menuItems[] = new \LimeSurvey\Menu\MenuItem($aMenuItem);
+            } else {
+                $menuItems[] = new \ls\menu\MenuItem($aMenuItem);
+            }
         }
-        $event->append('menuItems', array($menuItem));
+        $event->append('menuItems', $menuItems);
     }
 
     /** @inheritdoc */
@@ -438,7 +457,11 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
         $aData['aSettings']=$aQuestionsSettings;
         $aData['title']=$this->gT("Check survey");
         $aData['aResult']=$this->aResult;
-        $aData['updateUrl']=$this->api->createUrl('admin/pluginhelper', array('sa'=>'sidebody','plugin' => get_class($this), 'method' => 'actionUpdate','surveyId'=>$this->iSurveyId));
+        $aData['buttons'] = array(
+            'confirm' => $this->gT("Confirm"),
+            'cancel' => $this->gT("Cancel"),
+        );
+        $aData['updateUrl']=$this->api->createUrl('admin/pluginhelper', array('sa'=>'sidebody','plugin' => get_class($this), 'method' => 'actionCheck','surveyId'=>$this->iSurveyId));
         return $this->_renderPartial($aData,array("validate"));
     }
     /**
@@ -582,17 +605,22 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
         if($oRequest->getPost('cancel')) {
             App()->controller->redirect(array('admin/survey','sa'=>'view','surveyid'=>$this->iSurveyId));
         }
+        $oldSchema = null;
         if($oRequest->getIsPostRequest() && $oRequest->getPost('confirm'))
         {
             if(!$this->oldSchema) {
                 $sTableName=$this->sTableName=Yii::app()->request->getPost('oldsurveytable');
-                $aTables = App()->getApi()->getOldResponseTables($this->iSurveyId);
-                if(!in_array($sTableName,$aTables)){
-                    Yii::app()->setFlashMessage("Bad table name.",'error');
-                    App()->controller->redirect($this->api->createUrl('plugins/direct', array('plugin' => 'autoCommentIterativeQuestionnaire','surveyid'=>$this->iSurveyId, 'function' => 'view')));
-                }
-                $oldTable = PluginDynamic::model($sTableName);
-                $this->oldSchema = $oldSchema = $oldTable->getTableSchema();
+                    $aTables = App()->getApi()->getOldResponseTables($this->iSurveyId);
+                    if(!in_array($sTableName,$aTables)){
+                        Yii::app()->setFlashMessage("Bad table name.",'error');
+                        App()->controller->redirect(
+                            $this->api->createUrl('admin/pluginhelper',
+                                array('plugin' => get_class($this),'sa'=>'sidebody','surveyId'=>$this->iSurveyId, 'methode' => 'actionSelect')
+                            )
+                        );
+                    }
+                    $oldTable = PluginDynamic::model($sTableName);
+                    $this->oldSchema = $oldSchema = $oldTable->getTableSchema();
             }else {
                 $oldSchema=$this->oldSchema;
             }
@@ -630,17 +658,19 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
                     }
                 }
             }
-            $aQuestionsValidations=$oRequest->getPost('q',array());
-            foreach($aQuestionsValidations as $iQid=>$aQuestionValidations)
-            {
-                foreach($aQuestionValidations as $sType=>$aQuestionActions)
+            if($oldSchema) {
+                $aQuestionsValidations=$oRequest->getPost('q',array());
+                foreach($aQuestionsValidations as $iQid=>$aQuestionValidations)
                 {
-                    foreach($aQuestionActions as $sAction=>$sDo)
+                    foreach($aQuestionValidations as $sType=>$aQuestionActions)
                     {
-                        if($sAction=='select') {
-                            $this->doQuestion($iQid,$sType,$sAction,$oldSchema,$sDo);
-                        } elseif($sDo) {
-                            $this->doQuestion($iQid,$sType,$sAction,$oldSchema);
+                        foreach($aQuestionActions as $sAction=>$sDo)
+                        {
+                            if($sAction=='select') {
+                                $this->doQuestion($iQid,$sType,$sAction,$oldSchema,$sDo);
+                            } elseif($sDo) {
+                                $this->doQuestion($iQid,$sType,$sAction,$oldSchema);
+                            }
                         }
                     }
                 }
@@ -671,6 +701,7 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
                     "<a href='//manual.limesurvey.org/Assessments' rel='external' title='LimeSurvey manual'>".$this->gT("assessment")."</a>"
             ),
             "Success on :" => $this->gT("Success on :"),
+            "Information :" => $this->gT("Information :"),
             "Warning on :" => $this->gT("Warning on :"),
             "Error on :" => $this->gT("Error on :"),
             "Success" => $this->gT("Success"),
@@ -681,6 +712,7 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
         $aData['bSurveyActivated']=$this->bSurveyActivated;
         $aData['title'] = !empty($aData['title'] ) ? $aData['title']  : $this->gT("Iterative questionnaire");
         $aData['aResult']=$this->aResult;
+
         $content = "";
         foreach($views as $view){
             $content .= $this->renderPartial($view,$aData, true);
@@ -1309,7 +1341,7 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
                     $this->log(\CVarDumper::dumpAsString($oLangQuestion->getErrors()),'error');
                 }
             }
-            $this->addResult(sprintf($this->gT("Created question %s."),$sCode.$sType,'success'));
+            $this->addResult(sprintf($this->gT("Created question %s."),$sCode.$sType),'success');
             return $iQuestionId;
         }
         $this->addResult("Unable to create question {$sCode}{$sType}, please contact the software developer.",'error',$oQuestion->getErrors());
@@ -1748,9 +1780,9 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
      * @param mixed $oTrace
      * @retrun void
      */
-    private function addResult($sString,$sType='warning',$oTrace=NULL)
+    private function addResult($sString,$sType='info',$oTrace=NULL)
     {
-        if(in_array($sType,array('success','warning','error')) && is_string($sString) && $sString) {
+        if(in_array($sType,array('success','info','warning','error')) && is_string($sString) && $sString) {
             $this->aResult[$sType][]=$sString;
         } elseif(is_numeric($sType)) {
             $this->aResult['question'][]=$sType;

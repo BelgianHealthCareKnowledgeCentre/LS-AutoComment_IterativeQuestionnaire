@@ -9,6 +9,13 @@
             <?php } ?>
             </ul>
         <?php } ?>
+        <?php if(count($aResult['info'])){ ?>
+            <div class='alert alert-info'><?php echo $lang['Information :']; ?></div><ul class="">
+            <?php foreach($aResult['info'] as $string) { ?>
+                <li><?php echo $string ?></li>
+            <?php } ?>
+            </ul>
+        <?php } ?>
         <?php if(count($aResult['warning'])){ ?>
             <div class='alert'><?php echo $lang['Warning on :']; ?></div><ul>
             <?php foreach($aResult['warning'] as $string) { ?>
