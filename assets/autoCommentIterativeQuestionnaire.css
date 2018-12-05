@@ -1,0 +1,11 @@
+/*!
+ * Style
+ *
+ * Copyright 2018 Denis Chenu <http://www.sondages.pro>
+ * Licensed under the Apache License v2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ */
+.aciq-history.question-container{border:none 0 transparent;box-shadow: initial;padding:0;margin-bottom:0.1em}
+.aciq-history.question-container .question-title-container{padding:0}
+.aciq-history .panel{margin-bottom:0}
