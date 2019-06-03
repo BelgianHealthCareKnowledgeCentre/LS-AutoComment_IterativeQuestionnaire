@@ -7,7 +7,7 @@
  * @copyright 2014-2018 Denis Chenu <http://sondages.pro>
  * @copyright 2014-2018 Belgian Health Care Knowledge Centre (KCE) <http://kce.fgov.be>
  * @license AGPL v3
- * @version 4.1.0
+ * @version 4.1.1
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -101,6 +101,9 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
 
     /** @inheritdoc */
     public function init() {
+        if (Yii::app() instanceof CConsoleApplication) {
+            return;
+        }
         /* Basic settings */
         $this->subscribe('beforeSurveySettings');
         $this->subscribe('newSurveySettings');
