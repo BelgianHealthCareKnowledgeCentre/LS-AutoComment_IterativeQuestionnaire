@@ -4,10 +4,10 @@
  * Creates automatic comment questions, and for iterative quesitonnaires, create a new questionnaire from a previous round questionnaire
  *
  * @author Denis Chenu <denis@sondages.pro>
- * @copyright 2014-2018 Denis Chenu <http://sondages.pro>
+ * @copyright 2014-2019 Denis Chenu <http://sondages.pro>
  * @copyright 2014-2018 Belgian Health Care Knowledge Centre (KCE) <http://kce.fgov.be>
  * @license AGPL v3
- * @version 4.1.1
+ * @version 4.1.2
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -464,7 +464,7 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
             'confirm' => $this->gT("Confirm"),
             'cancel' => $this->gT("Cancel"),
         );
-        $aData['updateUrl']=$this->api->createUrl('admin/pluginhelper', array('sa'=>'sidebody','plugin' => get_class($this), 'method' => 'actionCheck','surveyId'=>$this->iSurveyId));
+        $aData['updateUrl']=Yii::app()->createUrl('admin/pluginhelper', array('sa'=>'sidebody','plugin' => get_class($this), 'method' => 'actionCheck','surveyId'=>$this->iSurveyId));
         return $this->_renderPartial($aData,array("validate"));
     }
     /**
@@ -520,7 +520,7 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
             );
         }
         $aData['title'] = $this->gT("Survey selection");
-        $aData['updateUrl']=$this->api->createUrl('admin/pluginhelper', array('sa'=>'sidebody','plugin' => get_class($this), 'method' => 'actionValidate','surveyId'=>$this->iSurveyId));
+        $aData['updateUrl']=Yii::app()->createUrl('admin/pluginhelper', array('sa'=>'sidebody','plugin' => get_class($this), 'method' => 'actionValidate','surveyId'=>$this->iSurveyId));
         return $this->_renderPartial($aData,array("select"));
     }
     /**
@@ -539,7 +539,7 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
             if(!in_array($sTableName,$aTables)){
                 Yii::app()->setFlashMessage($this->gT("Bad table name."),'error');
                 App()->controller->redirect(
-                    $this->api->createUrl('admin/pluginhelper',
+                    Yii::app()->createUrl('admin/pluginhelper',
                         array('plugin' => get_class($this),'sa'=>'sidebody','surveyId'=>$this->iSurveyId, 'methode' => 'actionSelect')
                     )
                 );
@@ -588,7 +588,7 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
                 'confirm' => $this->gT("Confirm update of survey"),
                 'cancel' => $this->gT("Cancel"),
             );
-            $aData['updateUrl']=$this->api->createUrl('admin/pluginhelper', array('sa'=>'sidebody','plugin' => get_class($this), 'method' => 'actionValidate','surveyId'=>$this->iSurveyId));
+            $aData['updateUrl']=Yii::app()->createUrl('admin/pluginhelper', array('sa'=>'sidebody','plugin' => get_class($this), 'method' => 'actionValidate','surveyId'=>$this->iSurveyId));
             LimeExpressionManager::SetDirtyFlag();
             return $this->_renderPartial($aData,array("validate"));
         } else {
@@ -617,7 +617,7 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
                     if(!in_array($sTableName,$aTables)){
                         Yii::app()->setFlashMessage("Bad table name.",'error');
                         App()->controller->redirect(
-                            $this->api->createUrl('admin/pluginhelper',
+                            Yii::app()->createUrl('admin/pluginhelper',
                                 array('plugin' => get_class($this),'sa'=>'sidebody','surveyId'=>$this->iSurveyId, 'methode' => 'actionSelect')
                             )
                         );
