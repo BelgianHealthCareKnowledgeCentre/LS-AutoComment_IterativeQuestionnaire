@@ -4,10 +4,10 @@
  * Creates automatic comment questions, and for iterative quesitonnaires, create a new questionnaire from a previous round questionnaire
  *
  * @author Denis Chenu <denis@sondages.pro>
- * @copyright 2014-2019 Denis Chenu <http://sondages.pro>
+ * @copyright 2014-2020 Denis Chenu <http://sondages.pro>
  * @copyright 2014-2018 Belgian Health Care Knowledge Centre (KCE) <http://kce.fgov.be>
  * @license AGPL v3
- * @version 4.1.2
+ * @version 4.1.3
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1004,10 +1004,10 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
                 case 'res':
                     if(isset($aScores[$iQid]['score'])){
                         $iCount=Question::model()->updateAll(array('question'=>$aScores[$iQid]['score']),"sid=:sid AND qid=:qid",array(":sid"=>$this->iSurveyId,":qid"=>$oQuestion->qid));
-                        $this->addResult(sprintf($this->gT("%s updated width %s"),$oQuestion->title,$aScores[$iQid]['score']),'success');
+                        $this->addResult(sprintf($this->gT("%s updated with %s"),$oQuestion->title,$aScores[$iQid]['score']),'success');
                     } else {
                         $iCount=Question::model()->updateAll(array('question'=>""),"sid=:sid AND qid=:qid",array(":sid"=>$this->iSurveyId,":qid"=>$oQuestion->qid));
-                        $this->addResult(sprintf($this->gT("%s not updated width score : unable to find score"),$oQuestion->title),'warning');
+                        $this->addResult(sprintf($this->gT("%s not updated with score : unable to find score"),$oQuestion->title),'warning');
                     }
                     break;
                 case 'hist':
