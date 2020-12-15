@@ -7,7 +7,7 @@
  * @copyright 2014-2020 Denis Chenu <http://sondages.pro>
  * @copyright 2014-2018 Belgian Health Care Knowledge Centre (KCE) <http://kce.fgov.be>
  * @license AGPL v3
- * @version 4.1.3
+ * @version 4.1.4
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -179,6 +179,9 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
     }
     /** @inheritdoc */
     public function newQuestionAttributes() {
+        if (!$this->getEvent()) {
+            throw new CHttpException(403);
+        }
         $questionAttributes=array(
             'iterativeQuestion'=> array(
                 'types' => "X",
@@ -199,6 +202,9 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
 
     /** @inheritdoc */
     public function beforeQuestionRender() {
+        if (!$this->getEvent()) {
+            throw new CHttpException(403);
+        }
         if($this->getEvent()->get('type') != "X") {
             return;
         }
@@ -239,6 +245,9 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
     /** @inheritdoc */
     public function beforeToolsMenuRender()
     {
+        if (!$this->getEvent()) {
+            throw new CHttpException(403);
+        }
         $event = $this->getEvent();
         $surveyId = $event->get('surveyId');
         if(!Permission::model()->hasSurveyPermission($surveyId, 'surveycontent', 'update')) {
@@ -295,6 +304,9 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
     /** @inheritdoc */
     public function beforeSurveySettings()
     {
+        if (!$this->getEvent()) {
+            throw new CHttpException(403);
+        }
         $oEvent = $this->event;
         $iSurveyId=$oEvent->get('survey');
         $oSurvey=Survey::model()->findByPk($iSurveyId);
@@ -390,6 +402,9 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
     }
     public function newSurveySettings()
     {
+        if (!$this->getEvent()) {
+            throw new CHttpException(403);
+        }
         $event = $this->event;
         foreach ($event->get('settings') as $name => $value) {
             $default=$event->get($name,null,null,isset($this->settings[$name]['default']) ? $this->settings[$name]['default'] : NULL);
@@ -399,6 +414,9 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
 
     public function setBaseLanguage()
     {
+        if (!$this->iSurveyId) {
+            throw new CHttpException(403);
+        }
         $oSurvey = Survey::model()->findByPk($this->iSurveyId);
         $aAllLanguage = $oSurvey->getAllLanguages();
         if(in_array(App()->session['adminlang'],$aAllLanguage))
