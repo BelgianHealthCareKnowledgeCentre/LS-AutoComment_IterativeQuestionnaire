@@ -4,10 +4,10 @@
  * Creates automatic comment questions, and for iterative quesitonnaires, create a new questionnaire from a previous round questionnaire
  *
  * @author Denis Chenu <denis@sondages.pro>
- * @copyright 2014-2020 Denis Chenu <http://sondages.pro>
+ * @copyright 2014-2022 Denis Chenu <http://sondages.pro>
  * @copyright 2014-2018 Belgian Health Care Knowledge Centre (KCE) <http://kce.fgov.be>
  * @license AGPL v3
- * @version 4.1.4
+ * @version 4.1.5
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1790,7 +1790,7 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
 #                else
                     $sHtmlList[]=CHtml::tag("li",array(),current($aString));
             }
-            return Chtml::tag("ul",array('class'=>'aciq-answerstext'),implode($sHtmlList,"\n"));
+            return Chtml::tag("ul",array('class'=>'aciq-answerstext'),implode("\n", $sHtmlList));
         }
     }
 
