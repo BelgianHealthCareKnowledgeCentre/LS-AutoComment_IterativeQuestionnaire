@@ -8,7 +8,7 @@
          <author>Denis Chenu for Belgian Health Care Knowledge Centre (KCE)</author>
         <authorUrl>https://www.kce.fgov.be/</authorUrl>
         <supportUrl>https://sondages.pro/</supportUrl>
-        <version>4.1.5</version>
+        <version>4.1.6</version>
         <license>GNU Affero General Public License v3.0</license>
         <description><![CDATA[Creates automatic comment questions, and for iterative quesitonnaires, create a new questionnaire from a previous round questionnaire.]]></description>
     </metadata>
