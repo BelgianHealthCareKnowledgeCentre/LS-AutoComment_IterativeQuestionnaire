@@ -9,7 +9,11 @@
 .aciq-history.question-container{border:none 0 transparent;box-shadow: initial;padding:0;margin-bottom:0.1em}
 .aciq-history.question-container .question-title-container{padding:0}
 .aciq-history .panel{margin-bottom:0}
-.aciq-history .panel-heading a .aciq-default{padding-right:2em}
+.aciq-history .panel-heading a {
+    position:relative;
+    display:block;
+}
+.aciq-history .panel-heading a .aciq-default{padding-right:2em;}
 .aciq-history .panel-heading a .aciq-default::after{
     content: "\f077";
     display: inline-block;

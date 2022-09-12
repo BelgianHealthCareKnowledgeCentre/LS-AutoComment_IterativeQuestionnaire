@@ -5,9 +5,9 @@
  *
  * @author Denis Chenu <denis@sondages.pro>
  * @copyright 2014-2022 Denis Chenu <http://sondages.pro>
- * @copyright 2014-2018 Belgian Health Care Knowledge Centre (KCE) <http://kce.fgov.be>
+ * @copyright 2014-2022 Belgian Health Care Knowledge Centre (KCE) <http://kce.fgov.be>
  * @license AGPL v3
- * @version 4.1.6
+ * @version 4.2.0
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -230,15 +230,19 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
         $historyId = "ciq-history-".$oEvent->get('qid');
         $questionText = $oEvent->get('text');
         $questionHelp = $oEvent->get('help');
+        $questionClass = $oEvent->get('class');
         $oEvent->set('class',$oEvent->get('class').' aciq-history');
         $oEvent->set('help',"");
-        $newText = CHtml::tag('div',array('class'=>"panel-heading"),
-                        CHtml::tag('a',array('data-toggle'=>'collapse','href'=>"#".$historyId,'aria-expanded'=>"false",'aria-controls'=>$historyId),$questionText)
-                    )
-                 . CHtml::tag('div',array('class'=>"panel-collapse collapse in",'id'=>$historyId,'aria-labelledby'=>$historyId),
-                        CHtml::tag('div',array('class'=>'panel-body'),$questionHelp)
-                    );
-        $newText = CHtml::tag('div',array('class'=>"panel panel-default"),$newText);
+        $this->subscribe('getPluginTwigPath', 'twigQuestionText');
+        $newText = Yii::app()->twigRenderer->renderPartial(
+            '/subviews/survey/question_subviews/question_text_iterativequestion.twig',
+            array(
+                'historyId' => $historyId,
+                'questionText' => $questionText,
+                'historyText' => $questionHelp,
+                'questionClass' => $questionClass
+            )
+        );
         $oEvent->set('text',$newText);
         if(!Yii::app()->clientScript->hasPackage('autoCommentIterativeQuestionnaire')) {
             Yii::setPathOfAlias('autoCommentIterativeQuestionnaire',dirname(__FILE__));
@@ -249,6 +253,13 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
             ));
             Yii::app()->getClientScript()->registerPackage('autoCommentIterativeQuestionnaire');
         }
+    }
+
+    /** append directory to twig */
+    public function twigQuestionText()
+    {
+        $viewPath = dirname(__FILE__) . "/twig";
+        $this->getEvent()->append('add', array($viewPath));
     }
 
     /** Menu and settings part */
