@@ -349,7 +349,7 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
                     'type'=>'string',
                     'label'=>sprintf($this->gT("Sentence added before old proposal history (%s)"),$sLang),
                     'htmlOptions' => array(
-                        'placeholder' => $this->gT('Previous proposal and result','html',$sLang)
+                        'placeholder' => $this->gT('Previous proposal and results','html',$sLang)
                     ),
                     'current' => $this->get("historytext_{$sLang}", 'Survey', $oEvent->get('survey'),""),
                 );
@@ -372,7 +372,7 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
                     'type'=>'string',
                     'label'=>"Sentence added before comment list ({$sLang})",
                     'htmlOptions' => array(
-                        'placeholder' => $this->gT('Previous comments.','html',$sLang)
+                        'placeholder' => $this->gT('Previous comment(s).','html',$sLang)
                     ),
                     'current' => $this->get("commenthist_{$sLang}", 'Survey', $oEvent->get('survey'),""),
                 );
@@ -1318,7 +1318,7 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
                             $baseQuestionText = $this->getOldAnswerText($sColumnName->name);
                             foreach($aLangs as $sLang) {
                                 $newQuestionText = "<div class='aciq-accordion'>";
-                                $newQuestionText .= "<p class='aciq-title comment-title'>".$this->get("commenthist_{$sLang}", 'Survey', $this->iSurveyId,$this->gT('Previous comments.','html',$sLang)).$sLang."</p>";
+                                $newQuestionText .= "<p class='aciq-title comment-title'>".$this->get("commenthist_{$sLang}", 'Survey', $this->iSurveyId,$this->gT('Previous comment(s).','html',$sLang)).$sLang."</p>";
                                 $newQuestionText .= "<div class='aciq-content'>".$baseQuestionText."</div>";
                                 $newQuestionText .= "</div>";
                                 QuestionL10n::model()->updateAll(
@@ -1546,7 +1546,7 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
                     case 'hist':
                         $newQuestionText = $this->get("historytext_{$sLang}", 'Survey', $this->iSurveyId,"");
                         if(trim($newQuestionText) == "") {
-                            $newQuestionText = $this->gT('Previous proposal and result','html',$sLang);
+                            $newQuestionText = $this->gT('Previous proposal and results','html',$sLang);
                         }
                         $newQuestionText = "<p class='aciq-default'>".$newQuestionText."</p>";
                         break;
@@ -1559,7 +1559,7 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
                     case 'commh':
                         $newQuestionText = $this->get("commenthist_{$sLang}", 'Survey', $this->iSurveyId,"");
                         if(trim($newQuestionText) == "") {
-                            $newQuestionText = $this->gT('Previous comments.','html',$sLang);
+                            $newQuestionText = $this->gT('Previous comment(s).','html',$sLang);
                         }
                         $newQuestionText = "<p class='aciq-default'>".$newQuestionText."</p>";
                         //~ if($oQuestionComment) {
@@ -1574,7 +1574,7 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
                     case 'h':
                         $newQuestionText = $this->get("commenthist_{$sLang}", 'Survey', $this->iSurveyId,"");
                         if(trim($newQuestionText) == "") {
-                            $newQuestionText = $this->gT('Previous comments.','html',$sLang);
+                            $newQuestionText = $this->gT('Previous comment(s).','html',$sLang);
                         }
                         $newQuestionText = "<p class='aciq-default'>".$newQuestionText."</p>";
                         //~ if($oQuestionComment) {
