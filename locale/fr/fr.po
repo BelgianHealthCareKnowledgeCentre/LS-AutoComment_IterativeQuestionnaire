@@ -1,203 +1,203 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2019-06-19 16:51+0200\n"
-"PO-Revision-Date: 2019-06-19 16:52+0200\n"
+"POT-Creation-Date: 2022-10-03 10:57+0200\n"
+"PO-Revision-Date: 2022-10-03 10:58+0200\n"
 "Last-Translator: Denis Chenu <contact@sondages.pro>\n"
 "Language-Team: \n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 2.2.3\n"
+"X-Generator: Poedit 2.4.2\n"
 "X-Poedit-Basepath: ..\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Poedit-KeywordsList: gT\n"
 "X-Poedit-SearchPath-0: .\n"
 "X-Poedit-SearchPathExcluded-0: locale\n"
 
-#: autoCommentIterativeQuestionnaire.php:124
+#: autoCommentIterativeQuestionnaire.php:132
 msgid "Unknow error."
 msgstr "Erreur inconnue."
 
-#: autoCommentIterativeQuestionnaire.php:128
+#: autoCommentIterativeQuestionnaire.php:136
 msgid "Display the question (text) from the previous round"
 msgstr "Montrer la question (texte) de la session précédente"
 
-#: autoCommentIterativeQuestionnaire.php:130
-#: autoCommentIterativeQuestionnaire.php:131
-#: autoCommentIterativeQuestionnaire.php:1724
-#: autoCommentIterativeQuestionnaire.php:1725
+#: autoCommentIterativeQuestionnaire.php:138
+#: autoCommentIterativeQuestionnaire.php:139
+#: autoCommentIterativeQuestionnaire.php:1777
+#: autoCommentIterativeQuestionnaire.php:1778
 msgid "No, do not display it"
 msgstr "Non, ne pas la montrer"
 
-#: autoCommentIterativeQuestionnaire.php:132
-#: autoCommentIterativeQuestionnaire.php:133
-#: autoCommentIterativeQuestionnaire.php:1726
-#: autoCommentIterativeQuestionnaire.php:1727
+#: autoCommentIterativeQuestionnaire.php:140
+#: autoCommentIterativeQuestionnaire.php:141
+#: autoCommentIterativeQuestionnaire.php:1779
+#: autoCommentIterativeQuestionnaire.php:1780
 msgid "Yes, display it"
 msgstr "Oui, montrer là"
 
-#: autoCommentIterativeQuestionnaire.php:134
+#: autoCommentIterativeQuestionnaire.php:142
 msgid "Yes, display it, but don’t update"
 msgstr "Oui, montrer là, mais ne pas la mettre à jour"
 
-#: autoCommentIterativeQuestionnaire.php:140
+#: autoCommentIterativeQuestionnaire.php:148
 msgid "Comment question (automatic)"
 msgstr "Question commentaire (automatique)"
 
-#: autoCommentIterativeQuestionnaire.php:142
+#: autoCommentIterativeQuestionnaire.php:150
 msgid "No creation of this question"
 msgstr "Ne pas créer cette question"
 
-#: autoCommentIterativeQuestionnaire.php:143
+#: autoCommentIterativeQuestionnaire.php:151
 msgid "Create question with default text (and Show it)"
 msgstr "Créer la question avec le texte par défaut (et l‘afficher)"
 
-#: autoCommentIterativeQuestionnaire.php:150
+#: autoCommentIterativeQuestionnaire.php:158
 msgid "Show the history question"
 msgstr "Montre la question avec l‘historique"
 
-#: autoCommentIterativeQuestionnaire.php:151
+#: autoCommentIterativeQuestionnaire.php:159
 msgid "Create an history question with actual question text"
 msgstr "Créer la question historique avec le texte actuel"
 
-#: autoCommentIterativeQuestionnaire.php:152
+#: autoCommentIterativeQuestionnaire.php:160
 msgid "Update history with current question text"
 msgstr "Mettre à jour la question avec le texte actuel"
 
-#: autoCommentIterativeQuestionnaire.php:155
+#: autoCommentIterativeQuestionnaire.php:163
 msgid "Have a question for comment (Disagree)"
 msgstr "Une question pour les commentaires existe (désaccord)"
 
-#: autoCommentIterativeQuestionnaire.php:156
+#: autoCommentIterativeQuestionnaire.php:164
 msgid ""
 "Create a question to enter comment (automatic :assesment of question is "
 "under 0)"
 msgstr ""
 
-#: autoCommentIterativeQuestionnaire.php:157
+#: autoCommentIterativeQuestionnaire.php:165
 msgid ""
 "Create a question to enter comment (when disagree : with condition : "
 "assesment of question is under 0 (score))"
 msgstr ""
 
-#: autoCommentIterativeQuestionnaire.php:161
+#: autoCommentIterativeQuestionnaire.php:169
 msgid "Shown the comment for reason of disagree list"
 msgstr ""
 
-#: autoCommentIterativeQuestionnaire.php:162
+#: autoCommentIterativeQuestionnaire.php:170
 msgid "Create an empty question for reason of disagree list"
 msgstr ""
 
-#: autoCommentIterativeQuestionnaire.php:163
+#: autoCommentIterativeQuestionnaire.php:171
 msgid ""
 "Create and update a question for reason of disagree list (only if question "
 "have comment)"
 msgstr ""
 
-#: autoCommentIterativeQuestionnaire.php:164
+#: autoCommentIterativeQuestionnaire.php:172
 msgid "Update the reason of disagree list"
 msgstr ""
 
-#: autoCommentIterativeQuestionnaire.php:167
+#: autoCommentIterativeQuestionnaire.php:175
 msgid "Have a question for alternative comment (Agree)"
 msgstr ""
 
-#: autoCommentIterativeQuestionnaire.php:168
-#: autoCommentIterativeQuestionnaire.php:169
+#: autoCommentIterativeQuestionnaire.php:176
+#: autoCommentIterativeQuestionnaire.php:177
 msgid ""
 "Create a question to enter alternative comment (agree : with condition : "
 "assesment of question is upper 0 (score))"
 msgstr ""
 
-#: autoCommentIterativeQuestionnaire.php:173
+#: autoCommentIterativeQuestionnaire.php:181
 msgid "Shown the comment for reason of agree list"
 msgstr ""
 
-#: autoCommentIterativeQuestionnaire.php:174
+#: autoCommentIterativeQuestionnaire.php:182
 msgid "Create an empty question for reason of agree list"
 msgstr ""
 
-#: autoCommentIterativeQuestionnaire.php:175
+#: autoCommentIterativeQuestionnaire.php:183
 msgid ""
 "Create and update a question for reason of agree list (only if question have "
 "comment)"
 msgstr ""
 
-#: autoCommentIterativeQuestionnaire.php:176
+#: autoCommentIterativeQuestionnaire.php:184
 msgid "Update the reason of agree list"
 msgstr ""
 
-#: autoCommentIterativeQuestionnaire.php:185
+#: autoCommentIterativeQuestionnaire.php:196
 msgid "Display"
 msgstr ""
 
-#: autoCommentIterativeQuestionnaire.php:189
+#: autoCommentIterativeQuestionnaire.php:200
 msgid "No"
 msgstr "Non"
 
-#: autoCommentIterativeQuestionnaire.php:190
+#: autoCommentIterativeQuestionnaire.php:201
 msgid "Yes"
 msgstr "Oui"
 
-#: autoCommentIterativeQuestionnaire.php:193
+#: autoCommentIterativeQuestionnaire.php:204
 msgid "Show help as history"
 msgstr ""
 
-#: autoCommentIterativeQuestionnaire.php:194
+#: autoCommentIterativeQuestionnaire.php:205
 msgid ""
 "If you use iterative questionaire, this question help are shown as history. "
 "Automatically set by iterative questionaire."
 msgstr ""
 
-#: autoCommentIterativeQuestionnaire.php:252
+#: autoCommentIterativeQuestionnaire.php:269
 msgid "Iteration"
 msgstr ""
 
-#: autoCommentIterativeQuestionnaire.php:273
+#: autoCommentIterativeQuestionnaire.php:290
 msgid "Check survey for iteration"
 msgstr ""
 
-#: autoCommentIterativeQuestionnaire.php:316
+#: autoCommentIterativeQuestionnaire.php:336
 #, php-format
 msgid "Sentence added before old proposal history (%s)"
 msgstr ""
 
-#: autoCommentIterativeQuestionnaire.php:318
-#: autoCommentIterativeQuestionnaire.php:1242
-#: autoCommentIterativeQuestionnaire.php:1298
-#: autoCommentIterativeQuestionnaire.php:1305
-msgid "Previous proposal and result"
+#: autoCommentIterativeQuestionnaire.php:338
+#: autoCommentIterativeQuestionnaire.php:1295
+#: autoCommentIterativeQuestionnaire.php:1351
+#: autoCommentIterativeQuestionnaire.php:1358
+msgid "Previous proposal and results"
 msgstr "Proposition précédente et résultat"
 
-#: autoCommentIterativeQuestionnaire.php:327
+#: autoCommentIterativeQuestionnaire.php:347
 #, php-format
 msgid ""
 "Sentence for the comments question show if user choose a answer with value "
 "less than 0 (%s)"
 msgstr ""
 
-#: autoCommentIterativeQuestionnaire.php:329
-#: autoCommentIterativeQuestionnaire.php:1249
+#: autoCommentIterativeQuestionnaire.php:349
+#: autoCommentIterativeQuestionnaire.php:1302
 msgid "Can you explain why you disagree with this proposal."
 msgstr ""
 "Pouvez-vous expliquer les raisons de votre désaccord sur cette proposition."
 
-#: autoCommentIterativeQuestionnaire.php:341
-#: autoCommentIterativeQuestionnaire.php:1086
-#: autoCommentIterativeQuestionnaire.php:1256
-#: autoCommentIterativeQuestionnaire.php:1267
-#: autoCommentIterativeQuestionnaire.php:1312
-#: autoCommentIterativeQuestionnaire.php:1322
-msgid "Previous comments."
-msgstr "Commentaires précédents."
+#: autoCommentIterativeQuestionnaire.php:361
+#: autoCommentIterativeQuestionnaire.php:1139
+#: autoCommentIterativeQuestionnaire.php:1309
+#: autoCommentIterativeQuestionnaire.php:1320
+#: autoCommentIterativeQuestionnaire.php:1365
+#: autoCommentIterativeQuestionnaire.php:1375
+msgid "Previous comment(s)."
+msgstr "Commentaire(s) précédent(s)."
 
-#: autoCommentIterativeQuestionnaire.php:385
+#: autoCommentIterativeQuestionnaire.php:405
 msgid "Assessments mode not activated"
 msgstr "Le mode évaluation n‘est pas activé"
 
-#: autoCommentIterativeQuestionnaire.php:385
+#: autoCommentIterativeQuestionnaire.php:405
 #, php-format
 msgid ""
 "Assessment mode for this survey is not activated. You can activate it in the "
@@ -207,267 +207,280 @@ msgstr ""
 "paramètres du questionnaire %s (onglet «Notification et de gestion des "
 "données”)."
 
-#: autoCommentIterativeQuestionnaire.php:433
+#: autoCommentIterativeQuestionnaire.php:442
+#: autoCommentIterativeQuestionnaire.php:513
+#: autoCommentIterativeQuestionnaire.php:579
+msgid "Unable to manage"
+msgstr ""
+
+#: autoCommentIterativeQuestionnaire.php:443
+#: autoCommentIterativeQuestionnaire.php:514
+#: autoCommentIterativeQuestionnaire.php:580
+msgid ""
+"This plugin can be used for public part but you can not manage settings."
+msgstr ""
+
+#: autoCommentIterativeQuestionnaire.php:466
 msgid "Survey updated"
 msgstr ""
 
-#: autoCommentIterativeQuestionnaire.php:461
+#: autoCommentIterativeQuestionnaire.php:494
 msgid "Check survey"
 msgstr ""
 
-#: autoCommentIterativeQuestionnaire.php:464
+#: autoCommentIterativeQuestionnaire.php:497
 msgid "Confirm"
 msgstr ""
 
-#: autoCommentIterativeQuestionnaire.php:465
-#: autoCommentIterativeQuestionnaire.php:510
-#: autoCommentIterativeQuestionnaire.php:519
-#: autoCommentIterativeQuestionnaire.php:589
+#: autoCommentIterativeQuestionnaire.php:498
+#: autoCommentIterativeQuestionnaire.php:553
+#: autoCommentIterativeQuestionnaire.php:562
+#: autoCommentIterativeQuestionnaire.php:642
 msgid "Cancel"
 msgstr ""
 
-#: autoCommentIterativeQuestionnaire.php:496
-#: autoCommentIterativeQuestionnaire.php:573
+#: autoCommentIterativeQuestionnaire.php:539
+#: autoCommentIterativeQuestionnaire.php:626
 msgid "Source table"
 msgstr ""
 
-#: autoCommentIterativeQuestionnaire.php:500
+#: autoCommentIterativeQuestionnaire.php:543
 msgid "Please choose …"
 msgstr ""
 
-#: autoCommentIterativeQuestionnaire.php:505
-#: autoCommentIterativeQuestionnaire.php:582
+#: autoCommentIterativeQuestionnaire.php:548
+#: autoCommentIterativeQuestionnaire.php:635
 msgid "Not completed"
 msgstr ""
 
-#: autoCommentIterativeQuestionnaire.php:509
+#: autoCommentIterativeQuestionnaire.php:552
 msgid "Validate question before import"
 msgstr ""
 
-#: autoCommentIterativeQuestionnaire.php:522
+#: autoCommentIterativeQuestionnaire.php:565
 msgid "Survey selection"
 msgstr ""
 
-#: autoCommentIterativeQuestionnaire.php:540
+#: autoCommentIterativeQuestionnaire.php:593
 msgid "Bad table name."
 msgstr ""
 
-#: autoCommentIterativeQuestionnaire.php:572
-#: autoCommentIterativeQuestionnaire.php:581
+#: autoCommentIterativeQuestionnaire.php:625
+#: autoCommentIterativeQuestionnaire.php:634
 msgid "Previous responses"
 msgstr ""
 
-#: autoCommentIterativeQuestionnaire.php:588
+#: autoCommentIterativeQuestionnaire.php:641
 msgid "Confirm update of survey"
 msgstr ""
 
-#: autoCommentIterativeQuestionnaire.php:701
-msgid "This survey is activated. You can not create question"
+#: autoCommentIterativeQuestionnaire.php:754
+msgid "This survey is activated. You can not create question."
 msgstr ""
 
-#: autoCommentIterativeQuestionnaire.php:703
+#: autoCommentIterativeQuestionnaire.php:756
 #, php-format
 msgid ""
 "No Delphi questions found. Are you sure to activate %s and set some value "
 "different of 0 for some question."
 msgstr ""
 
-#: autoCommentIterativeQuestionnaire.php:704
+#: autoCommentIterativeQuestionnaire.php:757
 msgid "assessment"
 msgstr ""
 
-#: autoCommentIterativeQuestionnaire.php:706
+#: autoCommentIterativeQuestionnaire.php:759
 msgid "Success on :"
 msgstr ""
 
-#: autoCommentIterativeQuestionnaire.php:707
+#: autoCommentIterativeQuestionnaire.php:760
 msgid "Information :"
 msgstr ""
 
-#: autoCommentIterativeQuestionnaire.php:708
+#: autoCommentIterativeQuestionnaire.php:761
 msgid "Warning on :"
 msgstr ""
 
-#: autoCommentIterativeQuestionnaire.php:709
+#: autoCommentIterativeQuestionnaire.php:762
 msgid "Error on :"
 msgstr ""
 
-#: autoCommentIterativeQuestionnaire.php:710
+#: autoCommentIterativeQuestionnaire.php:763
 msgid "Success"
 msgstr ""
 
-#: autoCommentIterativeQuestionnaire.php:711
+#: autoCommentIterativeQuestionnaire.php:764
 msgid "Warning"
 msgstr ""
 
-#: autoCommentIterativeQuestionnaire.php:712
+#: autoCommentIterativeQuestionnaire.php:765
 msgid "Error"
 msgstr ""
 
-#: autoCommentIterativeQuestionnaire.php:716
+#: autoCommentIterativeQuestionnaire.php:769
 msgid "Iterative questionnaire"
 msgstr ""
 
-#: autoCommentIterativeQuestionnaire.php:812
+#: autoCommentIterativeQuestionnaire.php:865
 msgid "Count"
 msgstr "Décompte"
 
-#: autoCommentIterativeQuestionnaire.php:827
+#: autoCommentIterativeQuestionnaire.php:880
 msgid "Total"
 msgstr "Total"
 
-#: autoCommentIterativeQuestionnaire.php:964
-#: autoCommentIterativeQuestionnaire.php:1154
+#: autoCommentIterativeQuestionnaire.php:1017
+#: autoCommentIterativeQuestionnaire.php:1207
 #, php-format
 msgid ""
 "A question with code %s already exist in your survey, can not create a new "
 "one"
 msgstr ""
 
-#: autoCommentIterativeQuestionnaire.php:973
+#: autoCommentIterativeQuestionnaire.php:1026
 #, php-format
 msgid "Question %s need a %s"
 msgstr ""
 
-#: autoCommentIterativeQuestionnaire.php:996
+#: autoCommentIterativeQuestionnaire.php:1049
 #, php-format
 msgid "Question with code %s don't exist in your survey"
 msgstr ""
 
-#: autoCommentIterativeQuestionnaire.php:1007
+#: autoCommentIterativeQuestionnaire.php:1060
 #, php-format
-msgid "%s updated width %s"
+msgid "%s updated with %s"
 msgstr ""
 
-#: autoCommentIterativeQuestionnaire.php:1010
+#: autoCommentIterativeQuestionnaire.php:1063
 #, php-format
-msgid "%s not updated width score : unable to find score"
+msgid "%s not updated with score : unable to find score"
 msgstr ""
 
-#: autoCommentIterativeQuestionnaire.php:1028
-#: autoCommentIterativeQuestionnaire.php:1058
-#: autoCommentIterativeQuestionnaire.php:1094
-#: autoCommentIterativeQuestionnaire.php:1199
+#: autoCommentIterativeQuestionnaire.php:1081
+#: autoCommentIterativeQuestionnaire.php:1111
+#: autoCommentIterativeQuestionnaire.php:1147
+#: autoCommentIterativeQuestionnaire.php:1252
 #, php-format
 msgid "%s (%s) - question help updated with list of answers."
 msgstr ""
 
-#: autoCommentIterativeQuestionnaire.php:1030
-#: autoCommentIterativeQuestionnaire.php:1060
-#: autoCommentIterativeQuestionnaire.php:1096
-#: autoCommentIterativeQuestionnaire.php:1201
+#: autoCommentIterativeQuestionnaire.php:1083
+#: autoCommentIterativeQuestionnaire.php:1113
+#: autoCommentIterativeQuestionnaire.php:1149
+#: autoCommentIterativeQuestionnaire.php:1254
 #, php-format
 msgid "%s question help was not updated: unable to find question."
 msgstr ""
 
-#: autoCommentIterativeQuestionnaire.php:1033
+#: autoCommentIterativeQuestionnaire.php:1086
 #, php-format
 msgid "Unable to find %s to update history for language %s."
 msgstr ""
 
-#: autoCommentIterativeQuestionnaire.php:1037
+#: autoCommentIterativeQuestionnaire.php:1090
 #, php-format
 msgid "%s (%s) - question help updated ."
 msgstr ""
 
-#: autoCommentIterativeQuestionnaire.php:1067
-#: autoCommentIterativeQuestionnaire.php:1103
-#: autoCommentIterativeQuestionnaire.php:1208
+#: autoCommentIterativeQuestionnaire.php:1120
+#: autoCommentIterativeQuestionnaire.php:1156
+#: autoCommentIterativeQuestionnaire.php:1261
 #, php-format
 msgid "%s question help cleared: question was not found in old survey."
 msgstr ""
 
-#: autoCommentIterativeQuestionnaire.php:1126
+#: autoCommentIterativeQuestionnaire.php:1179
 #, php-format
 msgid "No question %s in survey"
 msgstr ""
 
-#: autoCommentIterativeQuestionnaire.php:1139
+#: autoCommentIterativeQuestionnaire.php:1192
 #, php-format
 msgid "%s exist in survey."
 msgstr ""
 
-#: autoCommentIterativeQuestionnaire.php:1145
+#: autoCommentIterativeQuestionnaire.php:1198
 #, php-format
 msgid "%s was hide to respondant"
 msgstr ""
 
-#: autoCommentIterativeQuestionnaire.php:1147
+#: autoCommentIterativeQuestionnaire.php:1200
 #, php-format
 msgid "%s unable to hide to respondant"
 msgstr ""
 
-#: autoCommentIterativeQuestionnaire.php:1178
-#: autoCommentIterativeQuestionnaire.php:1217
+#: autoCommentIterativeQuestionnaire.php:1231
+#: autoCommentIterativeQuestionnaire.php:1270
 #, php-format
 msgid "%s was shown to respondant"
 msgstr ""
 
-#: autoCommentIterativeQuestionnaire.php:1180
-#: autoCommentIterativeQuestionnaire.php:1219
+#: autoCommentIterativeQuestionnaire.php:1233
+#: autoCommentIterativeQuestionnaire.php:1272
 #, php-format
 msgid "%s unable to shown to respondant"
 msgstr ""
 
-#: autoCommentIterativeQuestionnaire.php:1347
+#: autoCommentIterativeQuestionnaire.php:1400
 #, php-format
 msgid "Created question %s."
 msgstr ""
 
-#: autoCommentIterativeQuestionnaire.php:1391
+#: autoCommentIterativeQuestionnaire.php:1444
 #, php-format
 msgid "Unable to set %s iterativeQuestion"
 msgstr ""
 
-#: autoCommentIterativeQuestionnaire.php:1477
+#: autoCommentIterativeQuestionnaire.php:1530
 #, php-format
 msgid ""
 "% since LimeSurvey 2.05 title allow only alphanumeric (no space, no dot ..)"
 msgstr ""
 
-#: autoCommentIterativeQuestionnaire.php:1477
+#: autoCommentIterativeQuestionnaire.php:1530
 #, php-format
 msgid "Invalid title : %s"
 msgstr ""
 
-#: autoCommentIterativeQuestionnaire.php:1564
+#: autoCommentIterativeQuestionnaire.php:1617
 msgid "Ask the question again in this new round"
 msgstr ""
 
-#: autoCommentIterativeQuestionnaire.php:1581
+#: autoCommentIterativeQuestionnaire.php:1634
 #, php-format
 msgid "%s : no corresponding question."
 msgstr ""
 
-#: autoCommentIterativeQuestionnaire.php:1611
-msgid "See previous comments"
-msgstr ""
+#: autoCommentIterativeQuestionnaire.php:1664
+msgid "See previous comment(s)"
+msgstr "Commentaire(s) précédent(s)."
 
-#: autoCommentIterativeQuestionnaire.php:1613
-#: autoCommentIterativeQuestionnaire.php:1616
+#: autoCommentIterativeQuestionnaire.php:1666
+#: autoCommentIterativeQuestionnaire.php:1669
 msgid "No previous answers"
 msgstr ""
 
-#: autoCommentIterativeQuestionnaire.php:1619
+#: autoCommentIterativeQuestionnaire.php:1672
 msgid "No previous question"
 msgstr ""
 
-#: autoCommentIterativeQuestionnaire.php:1690
+#: autoCommentIterativeQuestionnaire.php:1743
 msgid "Display this question"
 msgstr ""
 
-#: autoCommentIterativeQuestionnaire.php:1711
+#: autoCommentIterativeQuestionnaire.php:1764
 msgid "Show comments from the previous round (automatic)"
 msgstr ""
 
-#: autoCommentIterativeQuestionnaire.php:1712
+#: autoCommentIterativeQuestionnaire.php:1765
 msgid "See"
 msgstr ""
 
-#: autoCommentIterativeQuestionnaire.php:1715
+#: autoCommentIterativeQuestionnaire.php:1768
 msgid "No comments from the previous round (automatic)"
 msgstr ""
 
-#: autoCommentIterativeQuestionnaire.php:1728
+#: autoCommentIterativeQuestionnaire.php:1781
 msgid "Yes, display it (but don’t update)"
 msgstr ""
