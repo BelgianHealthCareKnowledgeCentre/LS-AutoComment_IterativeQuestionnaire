@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<config>
+    <metadata>
+        <name>autoCommentIterativeQuestionnaire</name>
+        <type>plugin</type>
+        <creationDate>2018-04-18</creationDate>
+        <lastUpdate>2022-10-03</lastUpdate>
+         <author>Denis Chenu for Belgian Health Care Knowledge Centre (KCE)</author>
+        <authorUrl>https://www.kce.fgov.be/</authorUrl>
+        <supportUrl>https://sondages.pro/</supportUrl>
+        <version>4.2.1</version>
+        <license>GNU Affero General Public License v3.0</license>
+        <description><![CDATA[Creates automatic comment questions, and for iterative quesitonnaires, create a new questionnaire from a previous round questionnaire.]]></description>
+    </metadata>
+
+    <compatibility>
+        <version>3</version>
+        <version>5</version>
+    </compatibility>
+    <updaters disabled="disabled">
+    </updaters>
+</config>
