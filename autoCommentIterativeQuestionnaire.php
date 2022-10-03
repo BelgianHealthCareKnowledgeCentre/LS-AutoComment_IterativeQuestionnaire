@@ -26,6 +26,14 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
     static protected $name = 'autoCommentIterativeQuestionnaire';
     static protected $description = 'Creates automatic comment questions, and for iterative quesitonnaires, create a new questionnaire from a previous round questionnaire - v3.0';
 
+    /** @inheritdoc */
+    public $allowedPublicMethods = array(
+        'actionCheck',
+        'actionSelect',
+        'actionUpdate',
+        'actionValidate',
+    );
+
     private $iSurveyId=false;
     private $bSurveyActivated=false;
     private $sTableName="";
@@ -68,36 +76,36 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
         ),
     );
     private $aLang=array(
-            'hist'=>array(
-                'view'=>"Show the history question",
-                'createupdate'=>"Create an history question with actual question text",
-                'update'=>"Update history with <strong>actual</strong> question text",
-                ),
-            'comm'=>array(
-                'view'=>"Have a question for comment (Disagree)",
-                'create'=>"Create a question to enter comment (automatic :assesment of question is under 0)",
-                'createupdate'=>"Create a question to enter comment (when disagree : with condition : assesment of question is under 0 (score))",
-                'update'=>"",
-                ),
-            'comh'=>array(
-                'view'=>"Shown the comment for reason of disagree list",
-                'create'=>"Create an empty question for reason of disagree list",
-                'createupdate'=>"Create and update a question for reason of disagree list (only if question have comment)",
-                'update'=>"Update the reason of disagree list",
-                ),
-            'cgd'=>array(
-                'view'=>"Have a question for alternative comment (Agree)",
-                'create'=>"Create a question to enter alternative comment (agree : with condition : assesment of question is upper 0 (score))",
-                'createupdate'=>"Create a question to enter alternative comment (agree : with condition : assesment of question is upper 0 (score))",
-                'update'=>"",
-                ),
-            'cgdh'=>array(
-                'view'=>"Shown the comment for reason of agree list",
-                'create'=>"Create an empty question for reason of agree list",
-                'createupdate'=>"Create and update a question for reason of agree list (only if question have comment)",
-                'update'=>"Update the reason of agree list",
-                ),
-            );
+        'hist'=>array(
+            'view'=>"Show the history question",
+            'createupdate'=>"Create an history question with actual question text",
+            'update'=>"Update history with <strong>actual</strong> question text",
+            ),
+        'comm'=>array(
+            'view'=>"Have a question for comment (Disagree)",
+            'create'=>"Create a question to enter comment (automatic :assesment of question is under 0)",
+            'createupdate'=>"Create a question to enter comment (when disagree : with condition : assesment of question is under 0 (score))",
+            'update'=>"",
+            ),
+        'comh'=>array(
+            'view'=>"Shown the comment for reason of disagree list",
+            'create'=>"Create an empty question for reason of disagree list",
+            'createupdate'=>"Create and update a question for reason of disagree list (only if question have comment)",
+            'update'=>"Update the reason of disagree list",
+            ),
+        'cgd'=>array(
+            'view'=>"Have a question for alternative comment (Agree)",
+            'create'=>"Create a question to enter alternative comment (agree : with condition : assesment of question is upper 0 (score))",
+            'createupdate'=>"Create a question to enter alternative comment (agree : with condition : assesment of question is upper 0 (score))",
+            'update'=>"",
+            ),
+        'cgdh'=>array(
+            'view'=>"Shown the comment for reason of agree list",
+            'create'=>"Create an empty question for reason of agree list",
+            'createupdate'=>"Create and update a question for reason of agree list (only if question have comment)",
+            'update'=>"Update the reason of agree list",
+            ),
+        );
 
     /** @inheritdoc */
     public function init() {
@@ -327,7 +335,7 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
                     'type'=>'string',
                     'label'=>sprintf($this->gT("Sentence added before old proposal history (%s)"),$sLang),
                     'htmlOptions' => array(
-                        'placeholder' => $this->gT('Previous proposal and result','html',$sLang)
+                        'placeholder' => $this->gT('Previous proposal and results','html',$sLang)
                     ),
                     'current' => $this->get("historytext_{$sLang}", 'Survey', $oEvent->get('survey'),""),
                 );
@@ -350,7 +358,7 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
                     'type'=>'string',
                     'label'=>"Sentence added before comment list ({$sLang})",
                     'htmlOptions' => array(
-                        'placeholder' => $this->gT('Previous comments.','html',$sLang)
+                        'placeholder' => $this->gT('Previous comment(s).','html',$sLang)
                     ),
                     'current' => $this->get("commenthist_{$sLang}", 'Survey', $oEvent->get('survey'),""),
                 );
@@ -424,14 +432,21 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
         else
             $this->sLanguage = $oSurvey->language;
     }
-    public function actionSettings()
-    {
-        /* Not used */
-    }
+
     public function actionCheck()
     {
         $this->iSurveyId = $this->api->getRequest()->getParam('surveyId');
-        $this->_checkAccess();
+        $this->checkAccess();
+        if (!$this->checkCompatibilityAdmin()) {
+            $aData = array(
+                'title' => $this->gT("Unable to manage"),
+                'compatibilitydetail' => $this->gT("This plugin can be used for public part but you can not manage settings."),
+            );
+            return $this->_renderPartial(
+                $aData,
+                array("compatibility")
+            );
+        }
         $this->setBaseLanguage();
         $oRequest = $this->api->getRequest();
         if($oRequest->getPost('cancel')) {
@@ -492,7 +507,17 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
     public function actionSelect()
     {
         $this->iSurveyId = $this->api->getRequest()->getParam('surveyId');
-        $this->_checkAccess();
+        $this->checkAccess();
+        if (!$this->checkCompatibilityAdmin()) {
+            $aData = array(
+                'title' => $this->gT("Unable to manage"),
+                'compatibilitydetail' => $this->gT("This plugin can be used for public part but you can not manage settings."),
+            );
+            return $this->_renderPartial(
+                $aData,
+                array("compatibility")
+            );
+        }
         //$baseSchema = SurveyDynamic::model($this->iSurveyId)->getTableSchema();
         $aTables = App()->getApi()->getOldResponseTables($this->iSurveyId);
         if(count($aTables)) {
@@ -548,7 +573,17 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
     public function actionValidate()
     {
         $this->iSurveyId = $this->api->getRequest()->getParam('surveyId');
-        $this->_checkAccess();
+        $this->checkAccess();
+        if (!$this->checkCompatibilityAdmin()) {
+            $aData = array(
+                'title' => $this->gT("Unable to manage"),
+                'compatibilitydetail' => $this->gT("This plugin can be used for public part but you can not manage settings."),
+            );
+            return $this->_renderPartial(
+                $aData,
+                array("compatibility")
+            );
+        }
         $this->setBaseLanguage();
         if(Yii::app()->request->getPost('oldsurveytable')) {
             $this->bUpdateHistory=($this->get("updatequestion", 'Survey', $this->iSurveyId,"Y")=="Y");
@@ -620,7 +655,7 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
     public function actionUpdate()
     {
         $this->iSurveyId = $this->api->getRequest()->getParam('surveyId');
-        $this->_checkAccess();
+        $this->checkAccess();
         $this->setBaseLanguage();
         $oRequest = $this->api->getRequest();
         if($oRequest->getPost('cancel')) {
@@ -716,7 +751,7 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
             $aData=array();
         }
         $aData['lang'] = array(
-            "This survey is activated. You can not create question" => $this->gT("This survey is activated. You can not create question"),
+            "This survey is activated. You can not create question." => $this->gT("This survey is activated. You can not create question."),
             "No Delphi questions found. Are you sure to activate %s and set some value different of 0 for some question." => sprintf(
                 $this->gT("No Delphi questions found. Are you sure to activate %s and set some value different of 0 for some question."),
                     "<a href='//manual.limesurvey.org/Assessments' rel='external' title='LimeSurvey manual'>".$this->gT("assessment")."</a>"
@@ -1101,7 +1136,7 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
                             foreach($aLangs as $sLang)
                             {
                                 $newQuestionText = "<div class='aciq-accordion'>";
-                                $newQuestionText .= "<p class='aciq-title comment-title'>".$this->get("commenthist_{$sLang}", 'Survey', $this->iSurveyId,$this->gT('Previous comments.','html',$sLang)).$sLang."</p>";
+                                $newQuestionText .= "<p class='aciq-title comment-title'>".$this->get("commenthist_{$sLang}", 'Survey', $this->iSurveyId,$this->gT('Previous comment(s).','html',$sLang)).$sLang."</p>";
                                 $newQuestionText .= "<div class='aciq-content'>".$baseQuestionText."</div>";
                                 $newQuestionText .= "</div>";
                                 Question::model()->updateAll(array('question'=>$newQuestionText),"sid=:sid AND title=:title AND language=:language",array(":sid"=>$this->iSurveyId,":title"=>$oQuestionBase->title.$sType,":language"=>$sLang));
@@ -1257,7 +1292,7 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
             case 'hist':
                 $newQuestionText = $this->get("historytext_{$this->sLanguage}", 'Survey', $this->iSurveyId,"");
                 if(trim($newQuestionText) == "") {
-                    $newQuestionText = $this->gT('Previous proposal and result','html',$this->sLanguage);
+                    $newQuestionText = $this->gT('Previous proposal and results','html',$this->sLanguage);
                 }
                 $newQuestionText = "<p class='aciq-default'>".$newQuestionText."</p>";
                 break;
@@ -1271,7 +1306,7 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
                 $oQuestionComment=Question::model()->find("sid=:sid and title=:title and language=:language",array(":sid"=>$this->iSurveyId,":title"=>$sCode."comm",":language"=>$this->sLanguage));
                 $newQuestionText = $this->get("commenthist_{$this->sLanguage}", 'Survey', $this->iSurveyId,"");
                 if(trim($newQuestionText) == "") {
-                    $newQuestionText = $this->gT('Previous comments.','html',$this->sLanguage);
+                    $newQuestionText = $this->gT('Previous comment(s).','html',$this->sLanguage);
                 }
                 $newQuestionText = "<p class='aciq-default'>".$newQuestionText."</p>";
                 if(!empty($oQuestionComment) && $oQuestionComment->question) {
@@ -1282,7 +1317,7 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
                 $oQuestionComment=Question::model()->find("sid=:sid and title=:title and language=:language",array(":sid"=>$this->iSurveyId,":title"=>$sCode,":language"=>$this->sLanguage));
                 $newQuestionText = $this->get("commenthist_{$this->sLanguage}", 'Survey', $this->iSurveyId,"");
                 if(trim($newQuestionText) == "") {
-                    $newQuestionText = $this->gT('Previous comments.','html',$this->sLanguage);
+                    $newQuestionText = $this->gT('Previous comment(s).','html',$this->sLanguage);
                 }
                 //~ if(isset($oQuestionComment) && $oQuestionComment->question)
                     //~ $newQuestionText .= "<div class='aciq-historycomment'>".$oQuestionComment->question."</div>";
@@ -1313,21 +1348,21 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
                     case 'hist':
                         $newQuestionText = $this->get("historytext_{$sLang}", 'Survey', $this->iSurveyId,"");
                         if(trim($newQuestionText) == "") {
-                            $newQuestionText = $this->gT('Previous proposal and result','html',$sLang);
+                            $newQuestionText = $this->gT('Previous proposal and results','html',$sLang);
                         }
                         $newQuestionText = "<p class='aciq-default'>".$newQuestionText."</p>";
                         break;
                     case 'comm':
                         $newQuestionText = $this->get("commenttext_{$sLang}", 'Survey', $this->iSurveyId,"");
                         if(trim($newQuestionText) == "") {
-                            $newQuestionText = $this->gT('Previous proposal and result','html',$sLang);
+                            $newQuestionText = $this->gT('Previous proposal and results','html',$sLang);
                         }
                         break;
                     case 'commh':
                         $oQuestionComment=Question::model()->find("sid=:sid and title=:title and language=:language",array(":sid"=>$this->iSurveyId,":title"=>$sCode."comm",":language"=>$sLang));
                         $newQuestionText = $this->get("commenthist_{$sLang}", 'Survey', $this->iSurveyId,"");
                         if(trim($newQuestionText) == "") {
-                            $newQuestionText = $this->gT('Previous comments.','html',$sLang);
+                            $newQuestionText = $this->gT('Previous comment(s).','html',$sLang);
                         }
                         $newQuestionText = "<p class='aciq-default'>".$newQuestionText."</p>";
                         if(isset($oQuestionComment) && $oQuestionComment->question)
@@ -1337,7 +1372,7 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
                         $oQuestionComment=Question::model()->find("sid=:sid and title=:title and language=:language",array(":sid"=>$this->iSurveyId,":title"=>$sCode,":language"=>$sLang));
                         $newQuestionText = $this->get("commenthist_{$sLang}", 'Survey', $this->iSurveyId,"");
                         if(trim($newQuestionText) == "") {
-                            $newQuestionText = $this->gT('Previous comments.','html',$sLang);
+                            $newQuestionText = $this->gT('Previous comment(s).','html',$sLang);
                         }
                         $newQuestionText = "<p class='aciq-default'>".$newQuestionText."</p>";
                         if(isset($oQuestionComment) && $oQuestionComment->question) {
@@ -1626,7 +1661,7 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
                         $baseQuestionText =$this->getOldAnswerText($sColumnName->name);
                         if($baseQuestionText){
                             $jsonBaseQuestionText=json_encode($baseQuestionText);
-                            $sLabel="<div class='aciqtitle'>$baseQuestionText</div><span class='label' data-aciqtitle='true'>".$this->gT("See previous comments")."</span> {$sLabel}";
+                            $sLabel="<div class='aciqtitle'>$baseQuestionText</div><span class='label' data-aciqtitle='true'>".$this->gT("See previous comment(s)")."</span> {$sLabel}";
                         }else
                             $sLabel="<span class='label label-warning'>".$this->gT("No previous answers")."</span> {$sLabel}";
                     }
@@ -1818,19 +1853,28 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
      * @Throw CHttpException
      * @return void
      */
-    private function _checkAccess() {
+    private function checkAccess() {
         if(is_null($this->iSurveyId)) {
-            return;
+            throw new CHttpException(500,"Invalid Survey Id." );
         }
         $oSurvey = Survey::model()->findByPk($this->iSurveyId);
         if(!$oSurvey) {
             throw new CHttpException(404,"Invalid Survey Id." );
         }
-        if($oSurvey->active=="Y") {
+        if($oSurvey->active ==" Y") {
             $this->bSurveyActivated=true;
         }
         if( !Permission::model()->hasSurveyPermission($this->iSurveyId, 'surveycontent', 'update')) {
             throw new CHttpException(401,"Invalid Survey Id." );
         }
+    }
+
+    /**
+     * Check if is compatible
+     * @return boolean
+     */
+    private function checkCompatibilityAdmin()
+    {
+        return version_compare(App()->getConfig('versionnumber'), "4.0.0","<");
     }
 }
