@@ -5,9 +5,9 @@
  *
  * @author Denis Chenu <denis@sondages.pro>
  * @copyright 2014-2022 Denis Chenu <http://sondages.pro>
- * @copyright 2014-2018 Belgian Health Care Knowledge Centre (KCE) <http://kce.fgov.be>
+ * @copyright 2014-2022 Belgian Health Care Knowledge Centre (KCE) <http://kce.fgov.be>
  * @license AGPL v3
- * @version 4.1.5
+ * @version 4.1.6
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -346,7 +346,7 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
                     'type'=>'string',
                     'label'=>sprintf($this->gT("Sentence for the comments question show if user choose a answer with value less than 0 (%s)"),$sLang),
                     'htmlOptions' => array(
-                        'placeholder' => $this->gT('Can you explain why you disagree with this proposal.','html',$sLang)
+                        'placeholder' => $this->gT('Please explain why.','html',$sLang)
                     ),
                     'current' => $this->get("commenttext_{$sLang}", 'Survey', ""),
                 );
