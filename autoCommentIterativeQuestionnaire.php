@@ -1553,7 +1553,7 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
                     case 'comm':
                         $newQuestionText = $this->get("commenttext_{$sLang}", 'Survey', $this->iSurveyId,"");
                         if(trim($newQuestionText) == "") {
-                            $newQuestionText = $this->gT('Can you explain why you disagree with this proposal.','html',$sLang);
+                            $newQuestionText = $this->gT('Please explain why.','html',$sLang);
                         }
                         break;
                     case 'commh':

@@ -2,7 +2,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: autoCommentIterativeQuestionnaire\n"
-"POT-Creation-Date: 2022-11-09 11:44+0100\n"
+"POT-Creation-Date: 2022-11-17 17:38+0100\n"
 "PO-Revision-Date: 2018-05-03 18:09+0200\n"
 "Last-Translator: Denis Chenu <contact@sondages.pro>\n"
 "Language-Team: \n"
@@ -177,6 +177,7 @@ msgid ""
 msgstr ""
 
 #: autoCommentIterativeQuestionnaire.php:363
+#: autoCommentIterativeQuestionnaire.php:1556
 msgid "Please explain why."
 msgstr ""
 
@@ -445,10 +446,6 @@ msgstr ""
 #: autoCommentIterativeQuestionnaire.php:1471
 #, php-format
 msgid "%s unable to shown to respondant"
-msgstr ""
-
-#: autoCommentIterativeQuestionnaire.php:1556
-msgid "Can you explain why you disagree with this proposal."
 msgstr ""
 
 #: autoCommentIterativeQuestionnaire.php:1602
