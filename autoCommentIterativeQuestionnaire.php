@@ -259,6 +259,9 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
     public function twigQuestionText()
     {
         $viewPath = dirname(__FILE__) . "/twig";
+        if (App()->getConfig(' versionnumber') <=5 ){
+            $viewPath = dirname(__FILE__) . "/legacy5/twig";
+        }
         $this->getEvent()->append('add', array($viewPath));
     }
 
@@ -795,11 +798,13 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
 
         $content = "";
         foreach($views as $view){
+            if (App()->getConfig(' versionnumber') <=5 ){
+                $view = "legacy5." . $view;
+            }
             $content .= $this->renderPartial($view,$aData, true);
         }
         
         return $content;
-        //~ Yii::app()->end();
     }
 
     /**
