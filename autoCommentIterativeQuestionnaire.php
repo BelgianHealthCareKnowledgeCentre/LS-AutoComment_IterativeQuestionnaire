@@ -265,7 +265,7 @@ class autoCommentIterativeQuestionnaire extends PluginBase
     public function twigQuestionText()
     {
         $viewPath = dirname(__FILE__) . "/twig";
-        if (App()->getConfig(' versionnumber') <= 5) {
+        if (App()->getConfig('versionnumber') <= 5) {
             $viewPath = dirname(__FILE__) . "/twig-legacy5";
         }
         $this->getEvent()->append('add', array($viewPath));
@@ -470,8 +470,7 @@ class autoCommentIterativeQuestionnaire extends PluginBase
         if ($oRequest->getPost('cancel')) {
             App()->controller->redirect(
                 array(
-                    'admin/survey',
-                    'sa' => 'view',
+                    'surveyAdministration/view',
                     'surveyid' => $this->iSurveyId
                 )
             );
@@ -632,15 +631,14 @@ class autoCommentIterativeQuestionnaire extends PluginBase
             $aQuestions = array();
             $aQuestionsSettings = array();
             $aQuestionsInfo = array();
-
             foreach ($oQuestions as $oQuestion) {
                 $legend = $aQuestionsSetting = null;
                 if (in_array($oQuestion->type, self::$aValidQuestion)) {
                     $aQuestionsSetting = $this->getValidateQuestionSettings($oQuestion);
-                    $legend = "<span class='label label-info'>{$oQuestion->title}</span> : " . ellipsize(flattenText($oQuestion->question), 50);
+                    $legend = "<span class='badge bg-primary'>{$oQuestion->title}</span> : " . ellipsize(flattenText($oQuestion->question), 50);
                 } elseif (in_array($oQuestion->type, self::$aTextQuestion)) {
                     $aQuestionsSetting = $this->getCommentQuestionSettings($oQuestion);
-                    $legend = "<span class='label label-info'>{$oQuestion->title}</span> : " . ellipsize(flattenText($oQuestion->question), 50);
+                    $legend = "<span class='badge bg-primary'>{$oQuestion->title}</span> : " . ellipsize(flattenText($oQuestion->question), 50);
                 }
                 if ($legend) {
                     $aQuestionsSettings[$legend] = $aQuestionsSetting;
@@ -669,7 +667,8 @@ class autoCommentIterativeQuestionnaire extends PluginBase
             LimeExpressionManager::SetDirtyFlag();
             return $this->extendedRenderPartial($aData, array("validate"));
         } else {
-            App()->controller->redirect(array('/admin/survey/sa/view','surveyid' => $this->iSurveyId));
+            /** @todo Add a warning */
+            App()->controller->redirect(array('surveyAdministration/view','surveyid' => $this->iSurveyId));
         }
     }
     /**
@@ -683,7 +682,7 @@ class autoCommentIterativeQuestionnaire extends PluginBase
         $this->setBaseLanguage();
         $oRequest = $this->api->getRequest();
         if ($oRequest->getPost('cancel')) {
-            App()->controller->redirect(array('admin/survey','sa' => 'view','surveyid' => $this->iSurveyId));
+            App()->controller->redirect(array('surveyAdministration/view', 'surveyid' => $this->iSurveyId));
         }
         $oldSchema = null;
         if ($oRequest->getIsPostRequest() && $oRequest->getPost('confirm')) {
@@ -789,9 +788,6 @@ class autoCommentIterativeQuestionnaire extends PluginBase
 
         $content = "";
         foreach ($views as $view) {
-            if (App()->getConfig(' versionnumber') <= 5) {
-                $view = "legacy5." . $view;
-            }
             $content .= $this->renderPartial($view, $aData, true);
         }
 
@@ -1836,7 +1832,7 @@ class autoCommentIterativeQuestionnaire extends PluginBase
                 $sHtmlTable .= "</tbody></table>";
 
                 $aQuestionsSettings["q_{$oQuestion->qid}"]['type'] = 'info';
-                $aQuestionsSettings["q_{$oQuestion->qid}"]['content'] = "<div class='questiontitle' title='{$sQuestionTextTitle}'><strong class='label label-info'>{$oQuestion->title}</strong> : {$sQuestionText}</div><div class='oldresult  clearfix'>"
+                $aQuestionsSettings["q_{$oQuestion->qid}"]['content'] = "<div class='questiontitle' title='{$sQuestionTextTitle}'><strong class='badge bg-info '>{$oQuestion->title}</strong> : {$sQuestionText}</div><div class='oldresult  clearfix'>"
                     . $sHtmlTable
                     . "</div>"
                     . $hiddenPart;
@@ -2001,10 +1997,10 @@ class autoCommentIterativeQuestionnaire extends PluginBase
             }
             // Do label
             if ($oldAnswerText) {
-                $sLabel = "<span class='label label-info'>{$oQuestion->title}h</span>"
+                $sLabel = "<span class='badge bg-info'>{$oQuestion->title}h</span>"
                         . $this->gT("Show comments from the previous round (automatic)")
-                        . " <a class='label label-default' role='button' data-toggle='collapse' href='#previous{$oQuestion->title}' aria-expanded='false' aria-controls='collapseExample'><i class='fa fa-eye'> </i> " . $this->gT("See") . "</a> "
-                        . "<div class='collapse' id='previous{$oQuestion->title}'><div class='well text-left small'>$oldAnswerText</div></div>";
+                        . " <a class='badge bg-secondary' role='button' data-toggle='collapse' data-bs-toggle='collapse' href='#previous{$oQuestion->title}' aria-expanded='false' aria-controls='previous{$oQuestion->title}'><i class='fa fa-eye'> </i> " . $this->gT("See") . "</a> "
+                        . "<div class='collapse' id='previous{$oQuestion->title}'><div class='card card-body bg-body text-start small'>$oldAnswerText</div></div>";
             } else {
                 $sLabel = "<span class='label label-warning'>{$oQuestion->title}h</span>" . $this->gT("No comments from the previous round (automatic)");
             }
@@ -2024,6 +2020,9 @@ class autoCommentIterativeQuestionnaire extends PluginBase
                     'update' => $this->gT("Yes, display it"),
                     'show' => $this->gT("Yes, display it (but don’t update)"),
                 ),
+                'controlOptions' => [
+                    'class' => 'align-self-baseline'
+                ]
             );
             if ($oHistoryQuestion) {
                 $oAttributeHidden = QuestionAttribute::model()->find(
