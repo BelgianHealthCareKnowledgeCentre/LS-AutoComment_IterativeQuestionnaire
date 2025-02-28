@@ -4,10 +4,10 @@
  * Creates automatic comment questions, and for iterative quesitonnaires, create a new questionnaire from a previous round questionnaire
  *
  * @author Denis Chenu <denis@sondages.pro>
- * @copyright 2014-2022 Denis Chenu <http://sondages.pro>
- * @copyright 2014-2022 Belgian Health Care Knowledge Centre (KCE) <http://kce.fgov.be>
+ * @copyright 2014-2025 Denis Chenu <http://sondages.pro>
+ * @copyright 2014-2025 Belgian Health Care Knowledge Centre (KCE) <http://kce.fgov.be>
  * @license AGPL v3
- * @version 4.2.2
+ * @version 4.2.3
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -2110,7 +2110,7 @@ class autoCommentIterativeQuestionnaire extends PluginBase {
         if(!$oSurvey) {
             throw new CHttpException(404,"Invalid Survey Id." );
         }
-        if($oSurvey->active ==" Y") {
+        if($oSurvey->active == "Y") {
             $this->bSurveyActivated = true;
         }
         if( !Permission::model()->hasSurveyPermission($this->iSurveyId, 'surveycontent', 'update')) {
