@@ -13,7 +13,7 @@
     position:relative;
     display:block;
 }
-.aciq-history .panel-heading a .aciq-default{padding-right:2em;}
+.aciq-history .panel-heading a .aciq-default{padding-right:2em;margin-bottom:0}
 .aciq-history .panel-heading a .aciq-default::after{
     content: "\f077";
     display: inline-block;
@@ -25,4 +25,11 @@
 }
 .aciq-history .panel-heading a.collapsed .aciq-default::after{
     content: "\f078";
+}
+/* From BS 5.3 */
+.link-underline-opacity-0 {
+  text-decoration-color: transparent
+}
+.link-underline-opacity-100-hover:hover, .link-underline-opacity-100-hover:focus {
+  text-decoration-color: inherit
 }

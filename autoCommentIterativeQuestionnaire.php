@@ -753,8 +753,6 @@ class autoCommentIterativeQuestionnaire extends PluginBase
             }
         }
         LimeExpressionManager::SetDirtyFlag();
-        //~ $aData=array();
-        //~ $this->displayContent($aData,array("result"));
     }
 
     /**

@@ -5,13 +5,13 @@
     - historyText :  the text of history (saved in question help)
     - questionClass : the CSS class attribute to allow specific update
 #}
-<div class="panel panel-default">
-	<div class="panel-heading">
-		<a href="#{{ historyId }}" data-toggle="collapse" aria-expanded="true" aria-controls="{{ historyId }}">
+<div class="panel panel-default card">
+	<div class="panel-heading card-header">
+		<a href="#{{ historyId }}" class="link-underline-opacity-0 link-underline-opacity-100-hover" data-bs-toggle="collapse" data-toggle="collapse" aria-expanded="true" aria-controls="{{ historyId }}">
 			{{ questionText }}
 		</a>
 	</div>
-	<div class="panel-collapse collapse in" id="{{ historyId }}" aria-labelledby="{{ historyId }}">
+	<div class="panel-collapse collapse in show card-body" id="{{ historyId }}" aria-labelledby="{{ historyId }}">
 		<div class="panel-body">
 			{{ historyText }}
 		</div>
