@@ -1,6 +1,8 @@
 # autoCommentIterativeQuestionnaire
 
-Module for Lime Survey - Creates automatic comment questions, and for iterative questionnaires, creates a new questionnaire from a previous round questionnaire
+Module for Lime Survey - Creates automatic comment questions, and for iterative questionnaires, creates a new questionnaire from a previous round questionnaire.
+
+This version is designed for LimeSurvey 6 and above. For LimeSurvey 5 and 3: you can use the dedicated branches : [3x_legacy](https://github.com/BelgianHealthCareKnowledgeCentre/LS-AutoComment_IterativeQuestionnaire/tree/3x_legacy) and [5x_legacy](https://github.com/BelgianHealthCareKnowledgeCentre/LS-AutoComment_IterativeQuestionnaire/tree/5x_legacy).
 
 ## Installation
 
@@ -14,11 +16,11 @@ Module for Lime Survey - Creates automatic comment questions, and for iterative 
 
 ## Contribute
 
-Issue and pull request are welcome on [gitlab](https://gitlab.com/SondagesPro/autoCommentIterativeQuestionnaire). You can use [github](https://github.com/BelgianHealthCareKnowledgeCentre/LS-AutoComment_IterativeQuestionnaire) too …
+Issue and pull request are welcome on [github](https://github.com/BelgianHealthCareKnowledgeCentre/LS-AutoComment_IterativeQuestionnaire).
 
 Translation fix or new translation can be done at [translate.sondages.pro](https://translate.sondages.pro/projects/autocommentiterativequestionnaire/).
 
 ## Home page & Copyright
-- Copyright © 2014-2022 Belgian Health Care Knowledge Centre (KCE) <http://kce.fgov.be/>
-- Copyright © 2014-2022 Denis Chenu <http://sondages.pro>
+- Copyright © 2014-2025 Belgian Health Care Knowledge Centre (KCE) <http://kce.fgov.be/>
+- Copyright © 2014-2025 Denis Chenu <http://sondages.pro>
 - Licence : GNU General Affero Public License <https://www.gnu.org/licenses/agpl-3.0.html>
